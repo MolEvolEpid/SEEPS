@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# HIVsimulator
+# bluefern
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -12,11 +12,11 @@ A modern and modular simulator for phylogenetics and phylodynamics.
 
 ## Installation
 
-You can install the released version of HIVsimulator from
+You can install the released version of bluefern from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("HIVsimulator")
+install.packages("bluefern")
 ```
 
 ## Example
@@ -24,16 +24,16 @@ install.packages("HIVsimulator")
 Obtain pairwise distance matrices with as little as 3 lines of code:
 
 ``` r
-install.packages("HIVsimulator")
+install.packages("bluefern")
 parameters <- list("rate_function_parameters" = list("R0" = 5),
     "minimum_population_size" = 15, "maximum_population_target" = 100)
-simultion_results <- HIVsimulator::simulate_classic_HIV(parameters)
+simultion_results <- bluefern::simulate_classic_HIV(parameters)
 ```
 
 ## Modularity
 
-HIVsimulator offers complete modularity in designing simulations without
-an additional class structure. Simulation steps are interchangable
+Bluefern offers complete modularity in designing simulations without an
+additional class structure. Simulation steps are interchangable
 functions. You can insert, modify, or remove workflow steps at ease. The
 `simulate_classic_HIV` function we used above expands to:
 

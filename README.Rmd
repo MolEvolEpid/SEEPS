@@ -12,7 +12,7 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
-# HIVsimulator
+# bluefern
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -23,26 +23,27 @@ A modern and modular simulator for phylogenetics and phylodynamics.
 
 ## Installation
 
-You can install the released version of HIVsimulator from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of bluefern from [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("HIVsimulator")
+install.packages("bluefern")
 ```
 
 ## Example
 
 Obtain pairwise distance matrices with as little as 3 lines of code:
 
-```{r}
-install.packages("HIVsimulator")
+```{r eval=FALSE}
+install.packages("bluefern")
 parameters <- list("rate_function_parameters" = list("R0" = 5),
     "minimum_population_size" = 15, "maximum_population_target" = 100)
-simultion_results <- HIVsimulator::simulate_classic_HIV(parameters)
+simultion_results <- bluefern::simulate_classic_HIV(parameters)
 ```
 
 ## Modularity
 
-HIVsimulator offers complete modularity in designing simulations without an additional class structure. Simulation steps are interchangable functions. You can insert, modify, or remove workflow steps at ease. The `simulate_classic_HIV` function we used above expands to:
+Bluefern offers complete modularity in designing simulations without an additional class structure. Simulation steps are interchangable functions. You can insert, modify, or remove workflow steps at ease. The `simulate_classic_HIV` function we used above expands to:
+
 ```{r}
 simulate_classic_HIV <- function(params) {
     # This gives an example "workflow" function for this package.
@@ -50,7 +51,7 @@ simulate_classic_HIV <- function(params) {
 
     # Step 1: Determine the rate function for offspring generation
     # This obtains the function used in [Graw et al. 2012], [Kupperman et al. 2022]
-    biphasic_rate_function <- get_biphasic_hiv_rate_function(
+    biphasic_rate_function <- get_biphasic_HIV_rate(
         params = params[["rate_function_parameters"]])
 
     # Step 2: Forward pass to generate transmission history
@@ -98,9 +99,9 @@ simulate_classic_HIV <- function(params) {
 
 ```
 
-Showing 6 steps in this simulation.
+Showing 6 steps in this simulation:
 
-1. Obtain a rate function for offspring generation. We use a simple 2 phase rate function to model an increased offspring generation rate following initial infection, then a low rate after.
+1. Obtain a rate function for offspring generation. We use a simple 2 phase rate function `get_biphasic_HIV_rate`, to model an increased offspring generation rate following initial infection, then a low rate after.
 2. Simulate the transmission network. This simulation requires an offspring generation rate function (step 1), and min/max population sizes.
 3. Obtain a random sampling of active infections that are sampled. It is computationally expensive to reconstruct large trees.
 4. Reduce the simulation output to a transmission history tree.
@@ -120,6 +121,6 @@ Showing 6 steps in this simulation.
 ## Todo list
 In no particular order.
 
-[] Fast subsampling options for obtaining clusters without needing to sample a large proportion and down-sample the tree. This approach is very very expensive for over 500 sequences.
-[] Calculus utilities to convert almost any function into a rate function (numerical integration).
-[] Support joining clusters together from individual simulations to form large distance matrices.
+* Fast subsampling options for obtaining clusters without needing to sample a large proportion and down-sample the tree. This approach is very very expensive for over 500 sequences.
+* Calculus utilities to convert almost any function into a rate function (numerical integration).
+* Support joining clusters together from individual simulations to form large distance matrices.
