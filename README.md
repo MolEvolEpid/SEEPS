@@ -100,8 +100,8 @@ Showing 6 steps in this simulation:
 3.  Obtain a random sampling of active infections that are sampled. It
     is computationally expensive to reconstruct large trees.
 4.  Reduce the simulation output to a transmission history tree.
-5.  Convert the transmission history tree to a phylogeny using \[Author
-    et al, Y###\] to obtain more realistic results
+5.  Convert the transmission history tree to a phylogeny to obtain more
+    realistic results.
 6.  Reduce the phylogeny to a pairwise distance matrix.
 
 ## Additional options and features
