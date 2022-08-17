@@ -54,7 +54,13 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
     print(phylogeny)
     # Only reconstruct the nodes corresponding to the sampled tips
     distance_matrix <- geneology_to_distance_matrix_bpb(
-        geneology=phylogeny$geneology,
-        spike_root=FALSE)
+        geneology = phylogeny$geneology,
+        spike_root = FALSE)
+
+    # Since we used a density sampler, we may want to extract a grouping of closely related
+    # individuals of a fixed size.
+    distance_matrix <- reduce_large_matrix(oversampled_matrix = distance_matrix,
+        subsample_size = params[["minimum_population"]],
+        spike_root = FALSE)
     return(list("matrix" = distance_matrix))
 }
