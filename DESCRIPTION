@@ -1,6 +1,6 @@
-Package: bluefern
+Package: SEEPS
 Title: An Agent-Based Simulator for Infectious Disease Phylodynamics
-Version: 0.0.0.1
+Version: 0.0.1
 Authors@R:
     c(person(given = "Michael",
            family = "Kupperman",
@@ -18,7 +18,7 @@ Authors@R:
     )
 Description: A modular, modern simulation suite and toolkit for simulating transmission networks,
     phylogenies, and evolutionary pairwise distance matrices under different models and assumptions
-    for viral/sequence evolution. While intially developed for HIV, bluefern offers modular
+    for viral/sequence evolution. While intially developed for HIV, SEEPS offers modular
     utilities for custom workflows for extension beyond HIV.
 License: BSD_3_clause + LICENSE
 maintainer: Michael D. Kupperman <mkupperman@lanl.gov>

@@ -1,22 +1,26 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# bluefern
+# SEEPS: Sequence Evolution and Epidemiological Process Simulator
 
 <!-- badges: start -->
 <!-- badges: end -->
 
 A modern and modular simulator for phylogenetics and phylodynamics.
+SEEPS provides advanced simulation capabilities for population dynamics,
+population sampling techniques (random, contact-tracing), geneology and
+phylogeny simulation, and can construct both evolved sequences (using a
+provided reference) and pairwise distance matrices.
 
 <!-- One short paragraph about simulation -->
 
 ## Installation
 
-You can install the released version of bluefern from
+You can install the released version of SEEPS from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
-install.packages("bluefern")
+install.packages("SEEPS")
 ```
 
 ## Example
@@ -24,15 +28,15 @@ install.packages("bluefern")
 Obtain pairwise distance matrices with as little as 3 lines of code:
 
 ``` r
-install.packages("bluefern")
+install.packages("SEEPS")
 parameters <- list("rate_function_parameters" = list("R0" = 5),
     "minimum_population_size" = 15, "maximum_population_target" = 100)
-simultion_results <- bluefern::simulate_classic_HIV(parameters)
+simultion_results <- SEEPS::simulate_classic_HIV(parameters)
 ```
 
 ## Modularity
 
-Bluefern offers complete modularity in designing simulations without an
+SEEPS offers complete modularity in designing simulations without an
 additional class structure. Simulation steps are interchangable
 functions. You can insert, modify, or remove workflow steps at ease. The
 `simulate_classic_HIV` function we used above expands to:
@@ -106,18 +110,24 @@ Showing 6 steps in this simulation:
 
 ## Additional options and features
 
+-   Contact tracing. Use knowledge of the contact network to determine a
+    sample of individuals, rather than take a random sample.
 -   Tree subsampling. Between steps 5 and 6 above, further drop
     individuals using knowledge of the reconstructed tree.
 -   We provide support for a broad class of discretized rate functions,
     the most general being `get_Kphasic_hiv_rate_function`. This
     function accepts a list of rates for each simulation step and the
     length of each phase. <!-- This needs an example -->
--   Cluster-driven sampling. An expensive way to obtain a cluster is to
-    recover the history for a large proportion of the population, then
-    take only the closest `k-1` indiivduals around a randomly sampled
-    individual. The result is a sample of `k` closely related
-    individuals, but with the cost of reconstructing `n > k` individuals
-    in a larger tree.
+-   Cluster-driven sampling with variable intensity. An approximation of
+    a hybrid between contact tracing and random sampling is to randomly
+    sample a proportion (a *sampling intensity* between 1% and 100%) of
+    the active infections, then select a small subset of closely related
+    sequences. For pathogens (SARS-CoV2) with little or no variation
+    across most transmission events, a lower density will produce more
+    diverse samples, while high sampling intensity will result in
+    closely related or many identical sequences being obtained. This
+    functionality is provided through the `proportional` option in
+    `random_ids` and the `reduce_large_matrix` functions.
 -   Root-to-tip distances. Changing `spike_root` to`TRUE` above will add
     and track the root infection through the framework. The last
     row/column in the distance matrix will correspond to the distance to

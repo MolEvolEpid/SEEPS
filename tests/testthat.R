@@ -1,4 +1,4 @@
 library(testthat)
-library(bluefern)
+library(SEEPS)
 
-test_check("bluefern")
+test_check("SEEPS")
