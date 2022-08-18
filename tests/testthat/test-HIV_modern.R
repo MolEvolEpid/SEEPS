@@ -6,7 +6,6 @@ test_that("simulate_modern_HIV() pipeline", {
                    "total_steps_after_exp_phase" = 0, "mutation_rate"=0.009 * 300,
                    "a"=5, "b"=5)
     output <- simulate_modern_HIV(params = params)
-    print(output)
     expect_equal(dim(output$matrix), c(sample_size, sample_size))
     expect_equal(diag(output$matrix), rep(0, sample_size))
     expect_type(output$matrix, "double")

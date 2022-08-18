@@ -16,7 +16,6 @@ get_mocked_simulator_result_4 <- function() {
 skip("For profiling only")
 test_that("Check bpb inputs for 50 tips", {
     simulator_result <- get_mocked_simulator_result_4()
-    # print(simulator_result$active)
     n <- length(simulator_result$active)
     sample <- simulator_result$active[n-50:n]
     res <- reduce_transmission_history_biophybreak(samples = sample,
