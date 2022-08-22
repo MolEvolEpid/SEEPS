@@ -1,10 +1,15 @@
 #' Convert a phylogeny array to a newick tree
 #'
-#' Build a newick tree. Nodes are named "#_".
-#' Specify the mode argument to select the branch length mode. Mode "mu" denotes
-#' a (sampled) mutation count, while mode "mean" denotes expected distances.
+#' Build a newick tree from a phylogeny or geneology array.
+#'  Nodes are named "#_". Specify the mode argument to select the branch
+#' length mode. Mode "mu" denotes a (sampled) mutation count, while mode
+#' "mean" denotes expected distances.
+#'
+#' @param phylogeny A phylogeny or geneology array.
+#' @param mode String to determine reconstruction mode. Default is "mu", for
+#'   mutation count. Alternative "mean" for expected distance.
 #' @export
-phylogeny_to_newick <- function(phylogeny, mode="mu") {
+phylogeny_to_newick <- function(phylogeny, mode = "mu") {
     # Need to validate inputs
     # We won't trace back the entire phylogeny, just the marked "leaf" nodes.
     col <- -1
@@ -17,9 +22,11 @@ phylogeny_to_newick <- function(phylogeny, mode="mu") {
     inds <- which(phylogeny[, 6] != 0) # Get the index of the nonzeros
     n_nodes <- dim(phylogeny)[1] - 1
 
-    # We need to convert global indexing (1:# of tracked infections) to local indexing (1:M)
+    # We need to convert global indexing (1:# of tracked infections)
+    # to local indexing (1:M)
     global_to_local <- rep(0, max(inds))
-    global_to_local[inds] <- seq_along(M) # So g_2_l[global] = local for O(1) lookup
+    global_to_local[inds] <- seq_along(M)
+    # So g_2_l[global] = local for O(1) lookup
     branches <- character(n_nodes)  # Sub-tree at each branch
     # Fill in the names of the leaf nodes
     names <- lapply(1:M, function(x) paste0(x, "_"))
@@ -34,12 +41,15 @@ phylogeny_to_newick <- function(phylogeny, mode="mu") {
             # Record second offspring nodes
             children <- c(merge_nodes[[parent]], index)
             # Now construct the merged string
-            branches[parent] <- paste0("(", branches[children[1]], ":", phylogeny[children[1], col], ",",
-                                            branches[children[2]], ":", phylogeny[children[2], col], ")")
+            branches[parent] <- paste0("(", branches[children[1]], ":",
+                                       phylogeny[children[1], col], ",",
+                                       branches[children[2]], ":",
+                                       phylogeny[children[2], col], ")")
         }
 
     }
 
     # Complete the tree
-    paste0(branches[n_nodes], ";")
+    tree <- paste0(branches[n_nodes], ";")
+    return(tree)
 }
