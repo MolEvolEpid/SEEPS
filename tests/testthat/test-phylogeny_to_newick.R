@@ -1,7 +1,7 @@
 #' A helper function for tests. Builds a 3 leaf phylogeny with 2 internal nodes
 #' and the newick tree. All internal distances are unit. Uses the _ suffix for node names.
 three_leaf_phylo <- function() {
-    phylogeny <- matrix(0, nrow=6, ncol=6)
+    phylogeny <- matrix(0, nrow = 6, ncol = 6)
     # Sample id's
     phylogeny[1:5, 1] <- 1:5
     # Contact network
@@ -27,7 +27,7 @@ three_leaf_phylo <- function() {
 #' A helper function for tests. Builds a 4 leaf phylogeny with 2 internal nodes
 #' and the newick tree. All internal distances are unit. Uses the _ suffix for node names.
 four_leaf_phylo <- function() {
-    phylogeny <- matrix(0, nrow=8, ncol=6)
+    phylogeny <- matrix(0, nrow = 8, ncol = 6)
     # Sample id's
     phylogeny[1:7, 1] <- 1:7
     # Contact network
@@ -57,9 +57,9 @@ test_that("phylogeny_to_newick() three leaf example", {
     phylogeny <- reference[["phylogeny"]]
     newick_tree_mu <- reference[["newick_tree_mu"]]
     newick_tree_mean <- reference[["newick_tree_mean"]]
-    computed_tree <- phylogeny_to_newick(phylogeny, mode="mu")
+    computed_tree <- phylogeny_to_newick(phylogeny, mode = "mu")
     expect_identical(newick_tree_mu, computed_tree)
-    computed_tree <- phylogeny_to_newick(phylogeny, mode="mean")
+    computed_tree <- phylogeny_to_newick(phylogeny, mode = "mean")
     expect_identical(newick_tree_mean, computed_tree)
 })
 
@@ -68,8 +68,8 @@ test_that("phylogeny_to_newick() four leaf example", {
     phylogeny <- reference[["phylogeny"]]
     newick_tree_mu <- reference[["newick_tree_mu"]]
     newick_tree_mean <- reference[["newick_tree_mean"]]
-    computed_tree <- phylogeny_to_newick(phylogeny, mode="mu")
+    computed_tree <- phylogeny_to_newick(phylogeny, mode = "mu")
     expect_identical(newick_tree_mu, computed_tree)
-    computed_tree <- phylogeny_to_newick(phylogeny, mode="mean")
+    computed_tree <- phylogeny_to_newick(phylogeny, mode = "mean")
     expect_identical(newick_tree_mean, computed_tree)
 })

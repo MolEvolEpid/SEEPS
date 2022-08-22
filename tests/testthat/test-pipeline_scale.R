@@ -30,7 +30,6 @@ get_mocked_simulator_result_2 <- function() {
 
 test_that("Check bpb inputs for 50 tips", {
     simulator_result <- get_mocked_simulator_result_2()
-    # print(simulator_result$active)
     sample <- 276:325
     res <- reduce_transmission_history_bpb(
         samples = sample,
@@ -43,7 +42,6 @@ test_that("Check bpb inputs for 50 tips", {
         infection_times = res$transmission_times,
         sample_times = res$sample_times
     )
-    # print(phylogeny)
 })
 
 
@@ -52,7 +50,6 @@ test_that("Check bpb inputs for 50 tips", {
 skip("This test is for testing large simulations.")
 test_that("Check bpb inputs for 500 tips", {
     simulator_result <- get_mocked_simulator_result_4()
-    # print(simulator_result$active)
     n <- length(simulator_result$active)
     sample <- simulator_result$active[n - 500:n]
     res <- reduce_transmission_history_bpb(
@@ -66,5 +63,4 @@ test_that("Check bpb inputs for 500 tips", {
         infection_times = res$transmission_times,
         sample_times = res$sample_times
     )
-    # print(phylogeny)
 })
