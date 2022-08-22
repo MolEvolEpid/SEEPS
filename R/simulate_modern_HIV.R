@@ -29,7 +29,7 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
     target_sample <- random_prop_ids(
         active = simulator_result[["active"]],
         minimum_size = params[["minimum_population"]],
-        proportional = 0.1,  # sample a 10% and report closest infections
+        proportion = 0.1,  # sample a 10% and report closest infections
         spike_root = FALSE)
 
     # Get a geneology compatable with biophybreak (bpp) layout.
