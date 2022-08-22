@@ -56,7 +56,7 @@ simulate_classic_HIV <- function(params) {
 
     # Forward pass to generate transmission history
     simulator_result <- gen_transmission_history_exponential_constant(
-        minimum_population=params[["minimum_population"]],
+        minimum_population = params[["minimum_population"]],
         offspring_rate_fn = biphasic_rate_function,
         total_steps = params[["total_steps_after_exp_phase"]],
         maximum_population_target = params[["maximum_population_target"]],
@@ -66,10 +66,9 @@ simulate_classic_HIV <- function(params) {
     # Next, determine the sample of ID's to subsample.
     # This function takes independent random samples, but you could do
     # something much more fancy here and change this call signature
-    target_sample <- random_ids(
+    target_sample <- random_fixed_size_ids(
         active = simulator_result[["active"]],
         minimum_size = params[["minimum_population"]],
-        proportional = FALSE,  # sample a proportion of active infections
         spike_root = FALSE)
 
     # Obtain the transmission history for the subset of sampled individuals
@@ -81,13 +80,13 @@ simulate_classic_HIV <- function(params) {
 
     # Convert time signals to # of mutations using a rate
     geneology <- stochastify_transmission_history(
-        transmission_history=transmission_history$geneology,
+        transmission_history = transmission_history$geneology,
         rate=params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
 
     # convert the geneology into a distance matrix
     distance_matrix <- geneology_to_distance_matrix(
-        geneology=geneology$geneology,
-        spike_root=FALSE)
+        geneology = geneology$geneology,
+        spike_root = FALSE)
 
     # Now return the result. Additional metadata used above can be collected
     # and added to the return list.

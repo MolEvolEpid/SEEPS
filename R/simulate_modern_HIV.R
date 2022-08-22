@@ -26,7 +26,7 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
         maximum_population_target = params[["maximum_population_target"]],
         spike_root = FALSE)
 
-    target_sample <- random_ids(
+    target_sample <- random_prop_ids(
         active = simulator_result[["active"]],
         minimum_size = params[["minimum_population"]],
         proportional = 0.1,  # sample a 10% and report closest infections

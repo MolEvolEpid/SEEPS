@@ -33,10 +33,9 @@ simulate_classic_HIV <- function(params) {  # nolint: object_name_linter
     # Next, determine the sample of ID's to subsample.
     # This function takes independent random samples, but you could do
     # something much more fancy here and change this call signature
-    target_sample <- random_ids(
+    target_sample <- random_fixed_size_ids(
         active = simulator_result[["active"]],
         minimum_size = params[["minimum_population"]],
-        proportional = FALSE,  # sample a proportion of active infections
         spike_root = FALSE)
 
     # Obtain the transmission history for the subset of sampled individuals
