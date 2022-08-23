@@ -55,6 +55,7 @@ random_prop_ids <- function(active, proportion, minimum_size,
 #' @param minimum_size The minimum number of individuals to sample.
 #' @param spike_root Whether to include the root in the sample.
 #' @seealso random_prop_ids
+#' @export
 random_fixed_size_ids <- function(active, minimum_size, spike_root = FALSE) {
     return(random_ids(active, minimum_size = minimum_size,
            spike_root = spike_root))

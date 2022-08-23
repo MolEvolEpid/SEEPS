@@ -1,5 +1,15 @@
-# Public facing utility functions for interfacing with included BioPhyBreak functionss
-# call BioPhyBreak
+#' Generate a phylogeny from a transmission history using BioPhyBreak's coalescent simulator
+#'
+#' Run a backwards simulation using the transmission history to generate a phylogeny.
+#' See `geneology_to_phylogeny_bpb` for details on how the input should be structured.
+#' This function assumes that all coalescent events occur at or after the initial infection,
+#' that there is a single introduction and ancestral sequence.
+#'
+#'
+#' @param transmission_history A transmission history matrix
+#' @param infection_times A vector of infection times
+#' @seealso reduce_transmission_history_bpb
+#' @seealso generate_sequences
 #' @importFrom ape read.tree
 #' @export
 geneology_to_phylogeny_bpb <- function(transmission_history,
