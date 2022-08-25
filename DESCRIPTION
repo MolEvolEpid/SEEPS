@@ -26,9 +26,9 @@ Encoding: UTF-8
 LazyData: false
 Suggests:
     testthat (>= 2.1.0),
-    rlang (>= 1.0.0)
+    rlang (>= 1.0.0),
     phyclust (>= 0.1)
 Imports:
     ape (>= 5.0.0),
-    stats,
+    stats
 RoxygenNote: 7.2.1
