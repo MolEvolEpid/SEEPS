@@ -1,10 +1,31 @@
 #' Reduce simulation output to transmission history for a subset.
 #'
-#' @return
+#' Reduce a large simulation output to a smaller transmission history for a subset
+#' by tracing back the ancestory of each individual in the sample. If `spike_root`
+#' is `TRUE`, then the root of the tree is included in the geneology.
+#' We call this a geneology, rather than a phylogeny as it assumes that the
+#' transmission history is the phylogeny and no within-host diversity occurs.
+#'
+#' To include within host diversity, use `reduce_transmission_history_bpb` to
+#' extract a subst of the transmission history that we need for the phylogeny,
+#' and see  `geneology_to_phylogeny_bpb` to simulate within-host diversity
+#' and recover a true phylogeny.
+#'
+#' @param samples A vector of individuals (integers) to include in the sample.
+#' @param parents A matrix of parental individuals that encodes the transmission
+#'             history and sample times.
+#' @param current_step The current (absolute) time step in the simulation.
+#' @param spike_root A boolean indicating whether the geneology should
+#'            include the root of the outbreak or not. Default is `FALSE`.
+#'            This should be specified even if the founding infection is sampled,
+#'           as the root of the outbreak will have evolved since the founding event.
+#'
+#' @seealso reduce_transmission_history_bpb
+#' @return A list with 1 element: "geneology" a matrix of transmission history
+#'   that encodes an evolutionary tree.
 #' @export
 #'
 #' @importFrom stats rpois
-#' @examples
 reduce_transmission_history <- function(samples, parents,
                                         current_step, spike_root = FALSE) {
     observation_size <- length(samples)
@@ -76,8 +97,41 @@ reduce_transmission_history <- function(samples, parents,
 ###########################################################
 
 
+#' Reduce simulation output to transmission history for a subset to include
+#'   within host diversity.
+#'
+#' For a detailed explenation of inputs, see `reduce_transmission_history`, which
+#' is intended to reconstruct back only until the most recent common ancestor
+#'  of the sample, and return a tree.
+#'
+#' To include within host diversity, use `reduce_transmission_history_bpb` to
+#' extract a subst of the transmission history that we need for the phylogeny,
+#' and see  `geneology_to_phylogeny_bpb` to simulate within-host diversity
+#' and recover a true phylogeny.
+#'
+#' @param samples A vector of individuals (integers) to include in the sample.
+#' @param parents A matrix of parental individuals that encodes the transmission
+#'             history and sample times.
+#' @param current_step The current (absolute) time step in the simulation.
+#' @param spike_root A boolean indicating whether the geneology should
+#'            include the root of the outbreak or not. Default is `FALSE`.
+#'            This should be specified even if the founding infection is sampled,
+#'           as the root of the outbreak will have evolved since the founding event.
+#'
+#' @seealso reduce_transmission_history_bpb
+#' @return A list with 4 elements:
+#' `parents` A vector of parents of each infection in the sample until the root
+#' `times` A vector of times of sampling times in the tree. Sample times for
+#' internal nodes are after the last offspring generation time needed to
+#' reconstruct the sample.
+#' `transmission_times` A vector of transmission times of each infection in the tree.
+#' `samples_available` A boolean vector (mask) of which samples are leaves in the tree.
+#'    Used by the coalescent simulation to know which individuals should be assigned
+#'    detected sequences.
 #'
 #' @export
+#'
+#' @importFrom stats rpois
 reduce_transmission_history_bpb <- function( # nolint:object_length_linter
                                             samples, parents, current_step) {
     leaves <- samples
