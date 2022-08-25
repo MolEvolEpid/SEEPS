@@ -53,3 +53,11 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu") {
     tree <- paste0(branches[n_nodes], ";")
     return(tree)
 }
+
+# Add a root node to a newick tree string with distance 0 from the root
+add_root_to_newick <- function(tree, root_name = "root") {
+    subtree <- substring(tree, 1, nchar(tree) - 1)
+    new_tree <- paste0("(", subtree, ":0,", root_name, ":0);")
+
+    return(new_tree)
+}
