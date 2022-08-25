@@ -13,10 +13,10 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu") {
     # Need to validate inputs
     # We won't trace back the entire phylogeny, just the marked "leaf" nodes.
     col <- -1
-    error_msg <- "Mode argument could not be matched to a case."
+    error_msg <- "Mode argument could not be matched to a case. Expected 'mu' or 'mean'."
     if (mode == "mu") col <- 5
     if (mode == "mean") col <- 4
-    if (col == -1) throw(error_msg)
+    if (col == -1) stop(error_msg)
 
     M <- sum(phylogeny[, 6]) # number of leaf nodes
     inds <- which(phylogeny[, 6] != 0) # Get the index of the nonzeros
