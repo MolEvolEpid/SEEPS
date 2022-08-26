@@ -79,9 +79,7 @@ geneology_to_distance_matrix_bpb <- function(geneology, spike_root = FALSE) {
   # print(geneology)
   M <- sum(geneology[,6])  # number of leaf nodes
 
-  print(M)
   inds <- which(geneology[,6] != 0) # Get the index of the nonzeros
-  print(inds)
   # Todo: Optimize this.
   # We need to convert global indexing (1:# of tracked infections) to local indexing (1:M)
   global_to_local <- rep(0, max(inds))

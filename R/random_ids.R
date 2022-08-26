@@ -8,7 +8,6 @@ proportional = FALSE, spike_root = FALSE) {
         stop("Either a minimum size or proportional sampling must be specified")
     }
     if (proportional) {
-        print("Trying to set the number of samples dynamically")
         observation_size <- length(active) * proportional
         observation_size <- floor(observation_size)  # enforce type safety
 

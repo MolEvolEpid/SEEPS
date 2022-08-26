@@ -51,7 +51,6 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
             transmission_history=phylogeny$phylogeny,
             rate=params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
 
-    print(phylogeny)
     # Only reconstruct the nodes corresponding to the sampled tips
     distance_matrix <- SEEPS::geneology_to_distance_matrix_bpb(
         geneology = phylogeny$geneology,
