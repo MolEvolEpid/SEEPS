@@ -3,15 +3,16 @@
 # 1. current_step <- (int) the current time step. A non-negative integer
 # 2. birth_step <- A vector of birth indices (integers).
 # 3. params <- A list of optional parameters/functions needed to evaluate the rate function.
-#
+# Argument 3 may be substituted for a `...` in the function signature.
 # Classically, we are interested in the e of an active infection: current_step
 #
-# One can also procedurally generate these functions within a factory. We provide several
-# examples.
+# One can also procedurally generate these functions within a factory.
+# We provide several examples.
 
 #' Simple biphasic rate function used in [Kupperman et al.]
 #' @param current_step Current time step
-#' @param
+#' @param birth_step When the infection was generated
+#' @param params A list with one element `R0` needed to evaluate the rate function.
 #' @export
 biphasic_HIV_rate <- function(current_step, birth_step, params) {   # nolint: object_name_linter
     return(((current_step - birth_step) < 3) * 0.4 / 3 * params[["R0"]] / 0.505
@@ -36,13 +37,16 @@ get_biphasic_HIV_rate <- function(params) {
 
 #' Factory function to generate biphasic rate functions
 #'
-#' @param front_density_factor How much relative significance to place in the first phase of the rate function.
+#' @param front_density_factor How much relative significance to place in the
+#'   first phase of the rate function.
 #' @param front_cutoff Length of first phase. An integer 1 or greater.
-#' @param target_length Expected length of an infection. Used for normalization to ensure an average of $R0$ secondary infections.
+#' @param target_length Expected length of an infection. Used for normalization
+#'   to ensure an average of $R0$ secondary infections.
 #'
 #' @return Callable, rate function
 #' @export
 #'
+# nolint: object_name_linter
 get_biphasic_HIV_rate_function <- function(front_density_factor, front_cutoff,
                                            target_length) {
     total_density <- target_length + (front_density_factor - 1) * front_cutoff
