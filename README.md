@@ -30,7 +30,8 @@ Obtain pairwise distance matrices with as little as 3 lines of code:
 ``` r
 install.packages("SEEPS")
 parameters <- list("rate_function_parameters" = list("R0" = 5),
-    "minimum_population_size" = 15, "maximum_population_target" = 100)
+    "minimum_population" = 15, "maximum_population_target" = 1000,
+    "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.006 * 300)
 simultion_results <- SEEPS::simulate_classic_HIV(parameters)
 ```
 
@@ -109,6 +110,12 @@ Showing 6 steps in this simulation:
 
 ## Additional options and features
 
+-   Generate sequences with
+    [`seq-gen`](http://tree.bio.ed.ac.uk/software/seqgen/) \[Rambaut and
+    Grassly\]. Provide a phylogeny matrix and a root sequence to
+    `generate_sequences`. Pre-built rate models and reference sequences
+    are available. See the tutorial for more details.
+    <!-- todo: write this tutorial -->
 -   Contact tracing. Use knowledge of the contact network to determine a
     sample of individuals, rather than take a random sample.
 -   Tree subsampling. Between steps 5 and 6 above, further drop

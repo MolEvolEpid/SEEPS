@@ -54,7 +54,15 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu") {
     return(tree)
 }
 
-# Add a root node to a newick tree string with distance 0 from the root
+#' Add a root node to a newick tree string with distance 0 from the root
+#'
+#' A utility function for placing an explicit "root" into a newick tree string.
+#' at the implicit root. This function performs: `(tree); -> (tree:0, root:0);`.
+#'
+#' @param tree A newick tree string to add a root node to.
+#' @param root_name The name of the root node to add. Default is "root".
+#' @seealso phylogeny_to_newick
+#' @export
 add_root_to_newick <- function(tree, root_name = "root") {
     subtree <- substring(tree, 1, nchar(tree) - 1)
     new_tree <- paste0("(", subtree, ":0,", root_name, ":0);")
