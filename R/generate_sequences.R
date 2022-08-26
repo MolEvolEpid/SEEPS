@@ -25,8 +25,9 @@ generate_sequences <- function(phylogeny, root_sequence, rng_seed, rate_model,
     # RNG seed is not supported in phyclust. Instead, the R rng is used.
     if (rng_seed != -1) {
         # Get R's current RNG seed
-
-        rng_seed_store <- .Random.seed  # Get the current RNG seed
+        print("Adjusting to the provided seed.")
+        rng_seed_store <- rngtools::RNGseed()  # Get the current RNG seed
+        on.exit(rngtools::RNGseed(rng_seed_store))  # Restore the RNG seed
         set.seed(rng_seed)
         # Need to fix this. Make seed explicit and explicitly manage state
     }
@@ -61,14 +62,6 @@ generate_sequences <- function(phylogeny, root_sequence, rng_seed, rate_model,
     # This uses the phyclust C library under-the-hood to avoid an issue with
     # the input parser in phyclust's R interface.
     seqgen_result <- seqgen(input = input, opts = call_opts)
-    if (rng_seed != 1) {
-        # Dangerous! We're being very careful here in directly modifying
-        # the internal state of the RNG.
-        # Ensures reproducability independent of this function being used
-        # (calls after this function may depend on the RNG seed)
-        .Random.seed <- rng_seed_store  # nolint
-        # restore the RNG
-    }
 
     # Convert to a fasta file
     fasta <- phylip_to_fasta(seqgen_result)
@@ -94,6 +87,8 @@ phylip_to_fasta <- function(phylip_string) {
 }
 
 seqgen <- function(input, opts) {
+    # If phyclust is not loaded, we need to load it here
+
     # Setup a temp file for the input data
     tmp_fname_data <- paste0("seqgen.", Sys.getpid(), ".temp.data")
     tmp_fname_work <- paste0("seqgen.", Sys.getpid(), ".temp.work")

@@ -20,22 +20,33 @@ test_that("Generate_simulator() works with toy examples", {
     rate_model <- get_simple_GTR_model()
     # Get a toy newick tree
     tree <- four_leaf_phylo()
-
+    # set.seed(12)
+    rngtools::setRNG(12)
+    s <- .Random.seed
     # Call seq-gen
     fasta <- generate_sequences(phylogeny = tree$phylogeny,
                                 root_sequence = "ACGT",
                                 rng_seed = 1947,
                                 rate_model = rate_model)
+
     expect_true(check_2line_fasta(fasta))
-    x <- runif(1)  # bump rng forward
-    # Check RNG seed. Calling it again should reset it
+    # This should not have changed the seed
+    expect_true(identical(s, .Random.seed))
+    x <- runif(1)  # impact the seed here
+
+    s <- .Random.seed
+    # Again, this should not change the seed
     fasta2 <- generate_sequences(phylogeny = tree$phylogeny,
                                  root_sequence = "ACGT",
                                  rng_seed = 1947,
                                  rate_model = rate_model)
-    y <- ruinf(1)
+    expect_true(identical(s, .Random.seed))
+    # Now we should get a different value when we draw from the RNG
+    y <- runif(1)
     expect_equal(fasta, fasta2)
-    expect_not_equal(x, y)  # We should have gotten different values
+
+    # These should be different
+    expect_true(x != y)  # We should have gotten different values
 })
 
 test_that("Generate_simulator() works with a long sequence", {

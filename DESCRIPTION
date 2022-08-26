@@ -27,8 +27,9 @@ LazyData: false
 Suggests:
     testthat (>= 2.1.0),
     rlang (>= 1.0.0),
-    phyclust (>= 0.1)
+    rngtools (>= 1.0.0),
 Imports:
     ape (>= 5.0.0),
+    phyclust (>= 0.1),
     stats
 RoxygenNote: 7.2.1
