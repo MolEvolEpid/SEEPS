@@ -1,7 +1,7 @@
 
 # Fixture for a very simple GTR+I+G model
-get_simple_GTR_model <-function() {
-    model <- generate_rate_model(
+get_simple_GTR_model <-function() {  # nolint: object_name_linter
+    model <- SEEPS::generate_rate_model(
         a2c = 1, a2g = 1,
         a2t = 1, c2g = 1,
         c2t = 1, g2t = 1,
@@ -35,7 +35,7 @@ test_that("Generate_simulator() works with toy examples", {
                                  rate_model = rate_model)
     y <- ruinf(1)
     expect_equal(fasta, fasta2)
-    expect_not_equal(x,y)  # We should have gotten different values
+    expect_not_equal(x, y)  # We should have gotten different values
 })
 
 test_that("Generate_simulator() works with a long sequence", {

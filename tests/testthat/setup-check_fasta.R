@@ -4,7 +4,7 @@ check_2line_fasta <- function(fasta_string) {
     # is the name of the sequence and the second line is the sequence
     lines <- unlist(strsplit(fasta_string, split = "\n"))
     line_counter <- 1
-    for (line in lines[1:length(lines)]) {
+    for (line in lines[1:length(lines)]) { # nolint
         if (line_counter %% 2 == 0) {
             # Sequence line
             # Check that all chatacters are ACTG
