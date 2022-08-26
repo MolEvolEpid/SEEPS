@@ -53,9 +53,9 @@ get_V3_rate_model <- function() { # nolint: object_name_linter
 #' @seealso generate_sequences generate_rate_model
 #' @examples
 #' rate_model <- get_p17_rate_model()
-#'
-#'
+#' @export
 get_p17_rate_model <- function() {
+    stop("This model is not yet implemented")
     rate_model <- list(
         a2c = -1, a2g = 1, # Need to get numbers here
         a2t = -1, c2g = -1,
