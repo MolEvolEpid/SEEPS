@@ -14,19 +14,6 @@ test_that("gen_transmission_history_exponential_constant", {
     }
 )
 
-# Here is a factory for the simulator result
-get_mocked_simulator_result_1 <- function() {
-    set.seed(1947)  # for reproducability
-    biphasic_rate_function <- get_biphasic_HIV_rate(list("R0" = 3))
-
-    simulator_result <- gen_transmission_history_exponential_constant(
-        minimum_population = 5,
-        offspring_rate_fn = biphasic_rate_function,
-        maximum_population_target = 10, total_steps = 0,
-        spike_root = FALSE)
-    return(simulator_result)
-}
-
 test_that("Check reduce_transmission_history()", {
 
     simulator_result <- get_mocked_simulator_result_1()
