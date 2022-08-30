@@ -1,0 +1,11 @@
+region,start,end
+full,1,40
+polyA,1,10
+polyC,11,20
+polyG,21,30
+polyT,31,40
+polyAC,1,20
+polyCG,11,30
+polyGT,21,40
+polyACG,1,30
+polyCGT,11,40

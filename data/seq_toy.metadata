@@ -1,0 +1,3 @@
+This is a toy seqence for testing sequence processing/generation and developing pipelines.
+The sequence is comprised of 10 A's, followed by 10 C's, 10 G's, and 10 T's,
+for a total of 40 nucleotides.
