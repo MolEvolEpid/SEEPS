@@ -17,6 +17,7 @@
 #'  heterogeneity shape parameter) `alpha`, and number of categories for
 #'  discretized gamma heterogeneity (`ncat`).
 #' @seealso geneology_to_phylogeny_bpb
+#' @importFrom rngtools RNGseed
 #' @export
 generate_sequences <- function(phylogeny, root_sequence, rng_seed, rate_model,
                                rate_per_nt = FALSE) {
@@ -25,7 +26,6 @@ generate_sequences <- function(phylogeny, root_sequence, rng_seed, rate_model,
     # RNG seed is not supported in phyclust. Instead, the R rng is used.
     if (rng_seed != -1) {
         # Get R's current RNG seed
-        print("Adjusting to the provided seed.")
         rng_seed_store <- rngtools::RNGseed()  # Get the current RNG seed
         on.exit(rngtools::RNGseed(rng_seed_store))  # Restore the RNG seed
         set.seed(rng_seed)
