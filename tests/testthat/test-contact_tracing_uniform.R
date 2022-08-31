@@ -12,7 +12,9 @@ test_that("contact_tracing: contact_traced_uniform_ids() works", {
     # Check we found everything
     expect_equal(result[["samples"]], c(1, 2, 3, 4, 5))
     # Expect we find everything
-    expect_equal(result[["found"]], c(1, 2, 3, 4, 5))
+    expect_equal(sort(result[["found"]]), c(1, 2, 3, 4, 5))
+    # found list won't be sorted
+
     # Check completion status
     expect_equal(result[["status"]], "Out of nodes to explore")
     # Repeat for p=0.5
@@ -21,7 +23,6 @@ test_that("contact_tracing: contact_traced_uniform_ids() works", {
                                          parents = parents,
                                          p = 0, minimum_sample_size = 5)
     expect_equal(result, FALSE)
-
 })
 
 test_that("contact_tracing: test data retrieval", {
