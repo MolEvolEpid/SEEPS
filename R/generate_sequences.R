@@ -13,7 +13,7 @@
 #'   per nucleotide (nt) or per sequence. If per-sequence (`rate_per_nt=FALSE`),
 #' the mutation rate is normalized by the length of the root sequence.
 #' @param rate_model A list of GTR+I+G model parameters. Expects a list
-#'   of 10 parameters:  (6 rate parameters) `a2c`, `a2g`, `a2t`, `c2g`,
+#'   of 13 parameters:  (6 rate parameters) `a2c`, `a2g`, `a2t`, `c2g`,
 #'  `c2t`, `g2t`, (nucleotide frequencies:) `fa, fc, fg, ft`,
 #'  (proportion of sites with no variation:) `i`, (site specific
 #'  heterogeneity shape parameter) `alpha`, and number of categories for
@@ -21,7 +21,7 @@
 #' @seealso geneology_to_phylogeny_bpb
 #' @importFrom rngtools RNGseed
 #' @export
-generate_sequences <- function(phylogeny, root_sequence, rng_seed, rate_model,
+generate_sequences <- function(phylogeny, root_sequence, rng_seed = -1, rate_model,
                                rate_per_nt = FALSE) {
     # We need to convert the phylogeny into a newick tree for seq-gen
     # use mutations per site as branch lengths
@@ -46,7 +46,7 @@ generate_sequences <- function(phylogeny, root_sequence, rng_seed, rate_model,
     }
     # Build seq-gen call components
     newick_string <- SEEPS::phylogeny_to_newick(phylogeny = phylogeny_local,
-                                                mode = "mu")
+                                                mode = "mean")
     newick_string <- SEEPS::add_root_to_newick(newick_string)  # Add in the root node
     model_string <- " -mGTR"
     rate_string <- paste0("-r", rate_model["a2c"], ",", rate_model["a2g"], ",",

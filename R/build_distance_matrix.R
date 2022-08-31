@@ -130,3 +130,34 @@ geneology_to_distance_matrix_bpb <- function(geneology, spike_root = FALSE) {  #
   }
   return(pair_diff_mat)
 }
+
+################################################################################
+#
+# Build distance matrix from sequences using Ape from a dataframe
+#
+################################################################################
+
+#' Build a distance matrix from a dataframe of sequences using ape
+#'
+#' Use ape to compute a distance matrix using the specified distance model.
+#' Default is the "TN93" model.
+#'
+#' @importFrom ape as.DNAbin
+#' @export
+build_distance_matrix_from_df <- function(df, model="TN93") {  # nolint: object_length_linter
+  # Build a distance matrix from a dataframe using Ape
+  # spike_root option adds a row and column for a node at the root
+
+  # Convert the dataframe to a DNAbin through a list
+  clean_data <- unlist(sapply(as.list(df$seq), tolower))
+  clean_data <- sapply(clean_data, strsplit, "")
+
+  seqs <- ape::as.DNAbin(clean_data)
+  names(seqs) <- df$name
+
+  distances <- ape::dist.dna(seqs, model = model, as.matrix = TRUE)
+  # Rescale by sequence length to estimated # of mutations
+  distances <- distances * nchar(df$seq[1])
+
+  return(distances)
+}

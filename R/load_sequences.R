@@ -51,7 +51,7 @@ add_organism <- function(organism_name, accession_id, sequence, region_map, meta
     # Add the organism to the package's internal environment
     pkgenv$seq_store[[organism_name]] <<- list(  # nolint: object_usage_linter
         accession_id = accession_id,
-        sequence = sequence,
+        sequence = toupper(sequence),  # ape likes to load in lowercase
         region = region_map,
         metadata = metadata
     )

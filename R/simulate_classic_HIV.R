@@ -10,6 +10,7 @@
 #'
 #' @examples
 #' parameters <- list("rate_function_parameters" <- list("R0"=5),
+#'                     "mutation_rate" = 0.0067 / 12 * 300,
 #'                     "minimum_population"=50, "maximum_population_target"=100)
 #'
 simulate_classic_HIV <- function(params) {  # nolint: object_name_linter

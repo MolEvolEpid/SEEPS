@@ -27,6 +27,6 @@ reduce_large_matrix <- function(oversampled_matrix, subsample_size,
   if (spike_root) closest_k <- as.vector(append(closest_k, data_length))
   # Now subset the matrix
   data_matrix <- oversampled_matrix[closest_k, closest_k]
-  return(data_matrix)
+  return(list("matrix" = data_matrix, "keep_indices" = closest_k))
 
 }
