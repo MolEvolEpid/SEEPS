@@ -1,34 +1,30 @@
 #' Reduce a geneology to a pairwise distance matrix.
 #'
 #' @export
-geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {
+geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {  # nolint: cyclocomp_linter
   # Convert a geneology to a pairwise difference matrix
   # spike_root option adds a row and column for a node at the root
 
-  M = length(geneology[, 1]) / 2
+  M <- length(geneology[, 1]) / 2  # nolint: object_name_linter
 
-  # if (spike_root) {
-  #   M <- M + 1
-  # }  # 1 more root node for multicluster data
   mrca_mat <- matrix(0, M, M)
   pair_diff_mat <- matrix(0, M, M, )
   ind_par_mat <- geneology
-  # if (spike_root) { M <- M - 1 }
-  ## Obtain an MRCA matrix
+  # Obtain an MRCA matrix
   for (k in 1:(M - 1)) {
-    ancestors = rep(1e+5, M)
-    pp = k
-    ii = 1
+    ancestors <- rep(1e+5, M)
+    pp <- k
+    ii <- 1
     while (pp != 0) {
-      ancestors[ii] = pp
-      ii = ii + 1
-      pp = geneology[pp, 2]
+      ancestors[ii] <- pp
+      ii <- ii + 1
+      pp <- geneology[pp, 2]
     }
     for (l in (k + 1):M) {
-      pp = l
+      pp <- l
 
       while (!(pp %in% ancestors)) {
-        pp = geneology[pp, 2]
+        pp <- geneology[pp, 2]
       }
 
       mrca_mat[k, l] <- pp
@@ -73,42 +69,37 @@ geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {
 #' Reduce a geneology to a pairwise distance matrix.
 #'
 #' @export
-geneology_to_distance_matrix_bpb <- function(geneology, spike_root = FALSE) {
+geneology_to_distance_matrix_bpb <- function(geneology, spike_root = FALSE) {  # nolint: object_length_linter
   # Convert a geneology to a pairwise difference matrix
   # spike_root option adds a row and column for a node at the root
-  # print(geneology)
-  M <- sum(geneology[,6])  # number of leaf nodes
 
-  inds <- which(geneology[,6] != 0) # Get the index of the nonzeros
+  # number of leaf nodes
+  M <- sum(geneology[, 6])  # nolint: object_name_linter
+
+  inds <- which(geneology[, 6] != 0) # Get the index of the nonzeros
   # Todo: Optimize this.
   # We need to convert global indexing (1:# of tracked infections) to local indexing (1:M)
   global_to_local <- rep(0, max(inds))
   global_to_local[inds] <- seq_along(M)  # So g_2_l[global] = local for O(1) lookup
-  # if (spike_root) {
-  #   M <- M + 1
-  # }  # 1 more root node for multicluster data
   mrca_mat <- matrix(0, M, M)
   pair_diff_mat <- matrix(0, M, M, )
   ind_par_mat <- geneology
-  # if (spike_root) { M <- M - 1 }
   ## Obtain an MRCA matrix
   for (k in inds) {
-    ancestors = rep(-1, M)
-    pp = k
-    ii = 1
+    ancestors <- rep(-1, M)
+    pp <- k
+    ii <- 1
     while (pp != 0) {
-      ancestors[ii] = pp
-      ii = ii + 1
-      pp = geneology[pp, 2]
+      ancestors[ii] <- pp
+      ii <- ii + 1
+      pp <- geneology[pp, 2]
     }
     for (l in (k + 1):M) {
-      pp = l
+      pp <- l
 
       while (!(pp %in% ancestors)) {
-        pp = geneology[pp, 2]
+        pp <- geneology[pp, 2]
       }
-      # print(c(k, l))
-      # print(ancestors)
       mrca_mat[global_to_local[k], global_to_local[l]] <- pp
       mrca_mat[global_to_local[l], global_to_local[k]] <- pp
     }

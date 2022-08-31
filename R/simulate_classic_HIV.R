@@ -23,7 +23,7 @@ simulate_classic_HIV <- function(params) {  # nolint: object_name_linter
 
     # Forward pass to generate transmission history
     simulator_result <- SEEPS::gen_transmission_history_exponential_constant(
-        minimum_population=params[["minimum_population"]],
+        minimum_population = params[["minimum_population"]],
         offspring_rate_fn = biphasic_rate_function,
         total_steps = params[["total_steps_after_exp_phase"]],
         maximum_population_target = params[["maximum_population_target"]],
@@ -47,13 +47,13 @@ simulate_classic_HIV <- function(params) {  # nolint: object_name_linter
 
     # Convert time signals to # of mutations using a rate
     geneology <- SEEPS::stochastify_transmission_history(
-        transmission_history=transmission_history$geneology,
-        rate=params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
+        transmission_history = transmission_history$geneology,
+        rate = params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
 
     # convert the geneology into a distance matrix
     distance_matrix <- SEEPS::geneology_to_distance_matrix(
-        geneology=geneology$geneology,
-        spike_root=FALSE)
+        geneology = geneology$geneology,
+        spike_root = FALSE)
 
     # Now return the result. Additional metadata used above can be collected
     # and added to the return list.
