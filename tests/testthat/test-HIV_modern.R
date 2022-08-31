@@ -1,5 +1,6 @@
 test_that("simulate_modern_HIV() pipeline", {
 # Test example of simulator with bpb
+    set.seed(1947)
     sample_size <- 15
     params <- list("rate_function_parameters" = list("R0" = 5),
                    "minimum_population" = sample_size, "maximum_population_target" = sample_size * 10,

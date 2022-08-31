@@ -100,12 +100,11 @@ contact_tracing_engine <- function(detected_id,
                                        active = active, parents = parents,
                                        discovery_function = discovery_function,
                                        termination_function = termination_function)
-
-        if (length(result$active_nodes) > minimum_size || attempts > max_attempts) {
+        if (length(result$samples) >= minimum_size) {
             result[["success"]] <- TRUE
             break
         }
-        if (attempts > max_attempts) {
+        if (attempts >= max_attempts) {
             result[["success"]] <- FALSE
             break
         }
@@ -210,6 +209,7 @@ get_connections <- function(seed, parents) {
 #' contact network will be revealed with uniform probability.
 #'
 #' @param p The discovery probability. A float between 0 and 1.
+#' @importFrom stats rbinom
 #' @seealso  contact_traced_uniform_ids
 #' @export
 uniform_discovery_factory <- function(p) {
