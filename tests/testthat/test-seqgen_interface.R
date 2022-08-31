@@ -1,26 +1,9 @@
-
-# Fixture for a very simple GTR+I+G model
-get_simple_GTR_model <-function() {  # nolint: object_name_linter
-    model <- SEEPS::generate_rate_model(
-        a2c = 1, a2g = 1,
-        a2t = 1, c2g = 1,
-        c2t = 1, g2t = 1,
-        fa = 0.25, fc = 0.25,
-        fg = 0.25, ft = 0.25,
-        i = 0.5,
-        alpha = 0.5, ncat = 2
-    )
-    return(model)
-}
-
-
 test_that("Generate_simulator() works with toy examples", {
 
     # Get a simple GTR model
     rate_model <- get_simple_GTR_model()
     # Get a toy newick tree
     tree <- four_leaf_phylo()
-    # set.seed(12)
     rngtools::setRNG(12)
     s <- .Random.seed
     # Call seq-gen
@@ -79,7 +62,5 @@ test_that("fasta_string_to_dataframe() works with seqgen outputs", {
                                 rate_model = rate_model)
     # Convert to a dataframe
     df <- fasta_string_to_dataframe(fasta)
-    cat("new df is:\n")
-    print(df)
 
 })
