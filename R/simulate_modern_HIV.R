@@ -63,5 +63,5 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
         subsample_size = params[["minimum_population"]],
         spike_root = FALSE)
 
-    return(list("matrix" = distance_matrix))
+    return(list("matrix" = distance_matrix$matrix))
 }
