@@ -5,6 +5,8 @@
 #' at the MRCA of the phylogeny unless `spike_root = TRUE` is specified when the phylogeny
 #' is constructed.
 #'
+#' If the root sequence is a character vector, it is flattened into a single string.
+
 #' @param phylogeny A phylogeny object
 #' @param root_sequence A root sequence
 #' @param rate_per_nt Flag to indicate whether the mutation rate is
@@ -30,6 +32,11 @@ generate_sequences <- function(phylogeny, root_sequence, rng_seed, rate_model,
         on.exit(rngtools::RNGseed(rng_seed_store))  # Restore the RNG seed
         set.seed(rng_seed)
         # Need to fix this. Make seed explicit and explicitly manage state
+    }
+    # Ensure the root sequence provided is a single character string, not a vector
+    if (length(root_sequence) != 1) {
+        # Convert to a single character string
+        root_sequence <- paste0(root_sequence, collapse = "")
     }
     phylogeny_local <- phylogeny  # Don't modify the input argument
     if (rate_per_nt) {
