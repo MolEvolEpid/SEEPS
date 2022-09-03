@@ -56,6 +56,80 @@ contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
     }
 
 }
+
+# TODO: Refactor this with the above function to a single function with dispatcher
+#' Obtain a sample using a iterative contact tracing with a uniform discovery rate
+#' If a minimum number is not found, the algorithm is restarted with a new initial detection
+#'
+#' Perform iterative contact tracing on a simulated contact network.
+#' Randomness within contact tracing comes from the probability of discovering
+#' a new infection. This function assumes the infection rate is uniform across
+#' all possible contacts and individuals.
+#'
+#' Contact tracing is terminated when 2 * min_sample_size active nodes are discovered,
+#' or when there are no more detections to trace. At least `min_sample_size`
+#' individuals will always be returned.
+#'
+#' To determine the initial detection, we loop over a the list of active nodes
+#' until we complete a successful contact tracing.
+#'
+#' All contact tracing algorithms store both the ids of all discovered individuals
+#' and the ids of discovered active individuals.
+#' @param active A vector of active individuals
+#' @param parents A matrix encoding the transmission history
+#' @param minimum_sample_size The minimum number of individuals to form a sample
+#' @param p The probability of discovering each contact during tracing
+#' @param max_attempts Maximum number of attempts to perform to obtain a sample.
+#'   If no sample is found after this number of attempts, `FALSE` is returned
+#' @return A list with three fields: "status", "samples", and "found"
+#' @export
+contact_traced_uniform_restarts_ids <- function(active, parents,
+                                               minimum_sample_size, p) {
+
+    discovery_function <- uniform_discovery_factory(p = p)
+    termination_function <- sufficient_data_data_factory(
+        minimum_size = minimum_sample_size)
+    # Call the contact tracing engine
+    initial_detections <- sample(active, length(sample), replace = FALSE)
+    results <- list()
+    attempt_counter <- 1
+    target_size <- minimum_sample_size  # We modify this every time we restart
+    repeat {  # do-while pattern
+        result <- contact_tracing_engine(detected_id = initial_detections,
+                                        active = active,
+                                        parents = parents,
+                                        minimum_size = target_size,
+                                        discovery_function = discovery_function,
+                                        termination_function = termination_function,
+                                        max_attempts = length(active))  # Do not try and repeat nodes
+        # Check the output before we return
+        results[[attempt_counter]] <- result
+        # concatenate the results
+        samples <- unique(sapply(results, function(x) x[["samples"]]))
+        # Now update the target size by subtracting off the number of samples we have
+        target_size <- target_size - length(samples)
+
+        if (length(samples) >= minimum_sample_size) {
+            # We have enough data, take the first set we discovered
+            samples <- samples[1:minimum_sample_size]
+            found <- sapply(results, function(x) x[["found"]])
+        }
+    }
+
+    # Now update the list we're going to return
+    results[["success"]] <- TRUE
+    results[["samples"]] <- samples
+    results[["found"]] <- found
+    results[["status"]] <- paste("Found enough data with",
+                                 attempt_counter, "attempts")
+    if (result[["success"]]) {
+        return(result)
+    } else {
+        return(FALSE)
+    }
+
+}
+
 ################################################################################
 #
 # Core algorithms
@@ -218,7 +292,8 @@ uniform_discovery_factory <- function(p) {
     uniform_discovery <- function(parent_node, secondary_nodes,
                                   infection_time, secondary_times) {
         # Treat all nodes/contacts the same
-        nodes <- c(parent_node, secondary_nodes)
+        nodes <- c(secondary_nodes, parent_node)
+        # Place secondary nodes first so we'll search through them first.
         # Use a uniform probability distribution for node discovery.
         mask <- as.logical(rbinom(n = length(nodes), prob = p, size = 1))
         # return the nodes that were discovered
