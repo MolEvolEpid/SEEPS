@@ -8,8 +8,11 @@
 #' @param phylogeny A phylogeny or geneology array.
 #' @param mode String to determine reconstruction mode. Default is "mu", for
 #'   mutation count. Alternative "mean" for expected distance.
+#' @param label_mode String to determine how to label nodes. Default is "local",
+#'   for node index. Alternative "abs" for absolute index.
+#' @importFrom stringr str_replace_all
 #' @export
-phylogeny_to_newick <- function(phylogeny, mode = "mu") {
+phylogeny_to_newick <- function(phylogeny, mode = "mu", label_mode = "local") {
     # Need to validate inputs
     # We won't trace back the entire phylogeny, just the marked "leaf" nodes.
     col <- -1
@@ -51,6 +54,14 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu") {
 
     # Complete the tree
     tree <- paste0(branches[n_nodes], ";")
+    # Check if requested labels are local (1:M) or absolute (1:n_nodes)
+    if (label_mode == "abs") {
+        # We require stringr for this
+        # Switch the labels to absolute indexing
+        tree <- stringr::str_replace_all(pattern = "([0-9]+)_",  # Match a number followed by an underscore
+                     replacement = function(x) paste0(phylogeny[as.numeric(substr(x, 1, nchar(x) - 1)), 7], "_"),
+                     string = tree)  # Replace with the absolute index
+    }
     return(tree)
 }
 

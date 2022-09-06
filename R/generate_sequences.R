@@ -50,7 +50,9 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
 
     # Build seq-gen call components
     newick_string <- SEEPS::phylogeny_to_newick(phylogeny = phylogeny_local,
-                                                mode = "mean")
+                                                mode = "mean",
+                                                label_mode = "abs")
+    print(newick_string)
     newick_string <- SEEPS::add_root_to_newick(newick_string)  # Add in the root node
     model_string <- " -mGTR"
     rate_string <- paste0("-r", rate_model["a2c"], ",", rate_model["a2g"], ",",
@@ -76,6 +78,7 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
 
     # Convert to a fasta file
     fasta <- phylip_to_fasta(seqgen_result)
+    cat(fasta)
     return(fasta)
 }
 

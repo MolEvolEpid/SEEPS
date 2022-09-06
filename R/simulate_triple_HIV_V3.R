@@ -132,6 +132,7 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
 
     # Now build a pairwise distance matrix from the dataframe
     matrix_seq <- SEEPS::build_distance_matrix_from_df(sequences, model = "TN93")
+    matrix_seq <- matrix_seq[rownames(matrix_trans), colnames(matrix_trans)]
 
     ################# Reduce matrices through nearest neighbor #################
 
@@ -151,5 +152,7 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
     return(list("sequences" = sequences, "params" = params,
                 "matrix_seqs" = reduced_mat_data$matrix,
                 "matrix_trans" = reduced_matrix_trans$matrix,
-                "matrix_phylo" = reduced_matrix_phylo$matrix))
+                "matrix_phylo" = reduced_matrix_phylo$matrix,
+                # allow users to re-normalize data as they see fit
+                "sequence_length" = seq_len))
 }
