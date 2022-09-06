@@ -29,15 +29,27 @@
 reduce_transmission_history <- function(samples, parents,
                                         current_step, spike_root = FALSE) {
     observation_size <- length(samples)
-    geneology <- matrix(0, 2 * observation_size, 5)
+    geneology <- matrix(0, 2 * observation_size, 7)
+    # Columns:
+    # 1. Local Individual ID (1:n, 0)
+    # 2. Parent ID (1:n, 0)
+    # 3. Time of infection (non-negative integers)
+    # 4. Branch length (non-negative integers)
+    # 5. Distances (normalized here, but will be filled later via sampling)
+    # 6. Leaf status (bool)
+    # 7. Absolute index - leaves only. Number from samples
+
     geneology[1:(2 * observation_size - 1), 1] <- c(1:(2 * observation_size - 1))
 
     # Taking into account of the sampling time
-    geneology[1:observation_size, 3] <- current_step + rpois(observation_size, 6)
+    geneology[1:observation_size, 3] <- current_step  # + rpois(observation_size, 6)
+    geneology[1:observation_size, 6] <- 1  # These are leaves
     if (spike_root) {
         # Sample date for the initial infection is 0, no tip adjustment
         geneology[observation_size, 3] <- 0 # starts at the origin
     }
+    # Set the initial inds for each node
+    original_samples <- samples
     nNodes <- observation_size
     IDs <- 1:observation_size
     pp <- observation_size + 1
@@ -66,8 +78,20 @@ reduce_transmission_history <- function(samples, parents,
                     geneology[IDs[coall], 3] <- parents[samples[ind], 2]
                 }
             }
+
+            # Store the sample ID in column 7
+            # We need to not have written a value, and be a leaf
+            if (geneology[IDs[ind], 7] == 0 && geneology[IDs[ind], 6] == 1) {
+                geneology[IDs[ind], 7] <- original_samples[ind]
+            }
+            if (geneology[IDs[coall], 7] == 0 && geneology[IDs[coall], 6] == 1) {
+                geneology[IDs[coall], 7] <- original_samples[coall]
+            }
+
+
             IDs[coall] <- pp
             samples <- samples[-ind]
+            original_samples <- original_samples[-ind]  # remove from copy
             IDs <- IDs[-ind]
             pp <- pp + 1
             nNodes <- nNodes - 1
@@ -105,8 +129,8 @@ reduce_transmission_history <- function(samples, parents,
 #'  of the sample, and return a tree.
 #'
 #' To include within host diversity, use `reduce_transmission_history_bpb` to
-#' extract a subst of the transmission history that we need for the phylogeny,
-#' and see  `geneology_to_phylogeny_bpb` to simulate within-host diversity
+#' extract a subset of the transmission history that we need for the phylogeny,
+#' and see `geneology_to_phylogeny_bpb` to simulate within-host diversity
 #' and recover a true phylogeny.
 #'
 #' @param samples A vector of individuals (integers) to include in the sample.
@@ -155,7 +179,7 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
             if (offspring_times[sample] == -1) { # We don't know the parent, detect coalesence
                 offspring_times[sample] <- parents[sample, 2] # col 2 is for sample time
                 sample <- parent_index
-            } else { # We hit a coalecent event, we can stop now
+            } else { # We hit a coallecent event, we can stop now
                 exit_flag <- FALSE
             }
             if (sample == 0) { # We hit the root of the outbreak.
@@ -171,7 +195,8 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
     trimmed_offspring_times <- offspring_times
     leaf_locations_mask <- parents_tree == -2 # Create vector of FALSE
     leaf_locations_mask[leaves] <- TRUE # Record locations
-    # print(leaf_locations_mask)
+    leaf_indices <- as.integer(parents_tree == -2)  # Create vector of 0
+    leaf_indices[leaves] <- samples
 
     exit_flag <- TRUE
     index <- 1
@@ -186,8 +211,9 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
             # Now shift the list and drop the -1
             trimmed_parents_tree <- trimmed_parents_tree[-index]
             trimmed_offspring_times <- trimmed_offspring_times[-index]
-            # Also update the vector of leaf information
+            # Also update the vectors of leaf information
             leaf_locations_mask <- leaf_locations_mask[-index]
+            leaf_indices <- leaf_indices[-index]
         }
         if (index == length(trimmed_parents_tree)) {
             # At the end. Exit now
@@ -218,7 +244,7 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
         # Get their generation times
         times <- trimmed_offspring_times[offspring_indices]
         # Record the largest generation time
-        end <- min(max(times) + 1e-2, current_step) # When to stop simulating
+        end <- min(max(times) + 1e-3, current_step) # When to stop simulating
         # Add in an epsilon for numerical stability,
         end_times[node] <- end
     }
@@ -229,6 +255,8 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
         # Record when samples were taken
         "sample_times" = end_times,
         # Record how many samples  there are. Either 0 (internal) or 1(leaf)
-        "samples_available" = 1 * leaf_locations_mask
+        "samples_available" = 1 * leaf_locations_mask,
+        # The index of the sample in the original list
+        "transformed_sample_indices" = leaf_indices
     ))
 }

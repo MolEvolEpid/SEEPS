@@ -10,7 +10,8 @@ test_that("Check bpb inputs for 50 tips", {
     phylogeny <- geneology_to_phylogeny_bpb(
         transmission_history = res$parents,
         infection_times = res$transmission_times,
-        sample_times = res$sample_times
+        sample_times = res$sample_times,
+        leaf_sample_ids = res$transformed_sample_indices
     )
 })
 
@@ -31,6 +32,7 @@ test_that("Check bpb inputs for 500 tips", {
     phylogeny <- geneology_to_phylogeny_bpb(
         transmission_history = res$parents,
         infection_times = res$transmission_times,
-        sample_times = res$sample_times
+        sample_times = res$sample_times,
+        leaf_sample_ids = res$transformed_sample_indices
     )
 })

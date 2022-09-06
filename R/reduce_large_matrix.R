@@ -33,7 +33,6 @@ reduce_large_matrix <- function(oversampled_matrix, subsample_size,
     ix <- new_order$ix
   } else {
     # Expect a vector if indices to sort by
-    print(sort_order)
     ix <- sort_order
   }
   closest_k <- ix[1:subsample_size]

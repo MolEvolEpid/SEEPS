@@ -15,7 +15,8 @@ sim.coal.tree.m <- function(tt = NULL,  # nolint: object_name_linter
                             tree_name_digits = nchar(as.character(tree_name)),
                             save_tree = FALSE,
                             plot_tree = FALSE,
-                            plot_colors = NULL) {
+                            plot_colors = NULL,
+                            leaf_raw_ids = NULL) {
   # multiple coalescent simulations
   prefix <- "[Simualte coalsecent tree]"
   # make sure there is a valid tree or way to build one
@@ -96,6 +97,7 @@ sim.coal.tree.m <- function(tt = NULL,  # nolint: object_name_linter
     tt_old <- tt
     new_order <- order(tt$t_inf)
     tt <- tt[new_order, ]
+    leaf_raw_ids <- leaf_raw_ids[new_order]
     a <- a[new_order]
     b <- b[new_order]
     rhoR <- rhoR[new_order]  # nolint: object_name_linter
@@ -362,16 +364,17 @@ sim.coal.tree.m <- function(tt = NULL,  # nolint: object_name_linter
   # Build geneology for internal use
 
   new_nodes <- nodes
-  leaf_times <- leaf_times * 12  # Convert from months to
-  coal_times <- coal_times * 12  # Convert from months to
+  leaf_times <- leaf_times * 12  # Convert from months to years
+  coal_times <- coal_times * 12  # Convert from months to years
 
   status <- sign(nodes)  # Get +1/-1 entries
   new_nodes[new_nodes > 0] <- new_nodes[new_nodes > 0] + nInd  # Shift forward
   # Flip forward the node indexes so they correspond to the leaf times
   new_nodes[new_nodes < 0] <- new_nodes[new_nodes < 0] * (-1)
 
-  phylogeny <- matrix(data = 0, nrow = 2 * nInd, ncol = 6)  # Merge tree and distances
-  # The 6th column is a flag for "leaf node"?
+  phylogeny <- matrix(data = 0, nrow = 2 * nInd, ncol = 7)  # Merge tree and distances
+  # The 6th column is a flag for "leaf node"
+  # The 7th column is the sample index (from input)
   # Set the index into the matrix
   phylogeny[1:(2 * nInd - 1)] <- 1:(2 * nInd - 1)
 
@@ -380,6 +383,10 @@ sim.coal.tree.m <- function(tt = NULL,  # nolint: object_name_linter
       index <- new_nodes[row, col]
       # Place the re-indexed merge in the tree.
       phylogeny[index, 2] <- row + nInd
+      # Store the (input) sample index into column 7
+      if (!is.na(leaf_raw_ids[index]) && leaf_raw_ids[index] > 0) {
+        phylogeny[index, 7] <- leaf_raw_ids[index]
+      }
       outer_node_status <- status[row, col]  # Get a +1 or -1
       if (outer_node_status == -1) {
         outer_distance <- leaf_times[index]

@@ -33,7 +33,7 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
         minimum_sample_size = params[["minimum_population"]],
         p = 0.9)  # 90% probability of uncovering each contact
 
-    # Get a geneology compatable with biophybreak (bpp) layout.
+    # Get a geneology compatable with biophybreak (bpb) layout.
     res <- SEEPS::reduce_transmission_history_bpb(
         samples = target_sample[["samples"]],
         parents = simulator_result$parents,
@@ -44,7 +44,8 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
         transmission_history = res$parents,
         infection_times = res$transmission_times,
         sample_times = res$sample_times,
-        a = params[["a"]], b = params[["b"]])
+        a = params[["a"]], b = params[["b"]],
+        leaf_sample_ids = res$transformed_sample_indices)
 
     # Convert the time signals into a # of mutations using a rate
     phylogeny <- SEEPS::stochastify_transmission_history(
@@ -52,7 +53,7 @@ simulate_modern_HIV <- function(params) {  # nolint: object_name_linter
             rate = params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
 
     # Only reconstruct the nodes corresponding to the sampled tips
-    distance_matrix <- SEEPS::geneology_to_distance_matrix_bpb(
+    distance_matrix <- SEEPS::geneology_to_distance_matrix(
         geneology = phylogeny$geneology,
         spike_root = FALSE)
 

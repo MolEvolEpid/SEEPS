@@ -9,6 +9,7 @@ test_that("Generate_simulator() works with toy examples", {
     # Call seq-gen
     fasta <- generate_sequences(phylogeny = tree$phylogeny,
                                 root_sequence = "ACGT",
+                                branch_rate = 1,
                                 rng_seed = 1947,
                                 rate_model = rate_model)
 
@@ -21,6 +22,7 @@ test_that("Generate_simulator() works with toy examples", {
     # Again, this should not change the seed
     fasta2 <- generate_sequences(phylogeny = tree$phylogeny,
                                  root_sequence = "ACGT",
+                                 branch_rate = 1,
                                  rng_seed = 1947,
                                  rate_model = rate_model)
     expect_true(identical(s, .Random.seed))
@@ -43,6 +45,7 @@ test_that("Generate_simulator() works with a long sequence", {
     # Call seq-gen
     fasta <- generate_sequences(phylogeny = tree$phylogeny,
                                 root_sequence = string,
+                                branch_rate = 1,
                                 rng_seed = 1947,
                                 rate_model = rate_model)
     expect_true(check_2line_fasta(fasta))
@@ -58,6 +61,7 @@ test_that("fasta_string_to_dataframe() works with seqgen outputs", {
     # Call seq-gen
     fasta <- generate_sequences(phylogeny = tree$phylogeny,
                                 root_sequence = "ACGT",
+                                branch_rate = 1,
                                 rng_seed = 1947,
                                 rate_model = rate_model)
     # Convert to a dataframe

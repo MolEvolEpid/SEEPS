@@ -47,7 +47,8 @@ simulate_sequences_HIV_V3 <- function(params) {  # nolint: object_name_linter
         transmission_history = res$parents,
         infection_times = res$transmission_times,
         sample_times = res$sample_times,
-        a = params[["a"]], b = params[["b"]])
+        a = params[["a"]], b = params[["b"]],
+        leaf_sample_ids = res$transformed_sample_indices)
 
 
     # Convert the time signals into a # of mutations per site
@@ -67,6 +68,7 @@ simulate_sequences_HIV_V3 <- function(params) {  # nolint: object_name_linter
     # Call Seq-Gen to generate sequences from the provided reference sequence.
     sequences <- SEEPS::generate_sequences(
         phylogeny = phylogeny$geneology,
+        branch_rate = params[["mutation_rate"]] / 12,
         root_sequence = V3_sequence,
         rate_model = rate_model,
         rate_per_nt = FALSE)  # Distances in phylogeny are already in per nt

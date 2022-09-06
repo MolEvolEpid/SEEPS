@@ -21,7 +21,8 @@
 #' @seealso geneology_to_phylogeny_bpb
 #' @importFrom rngtools RNGseed
 #' @export
-generate_sequences <- function(phylogeny, root_sequence, rng_seed = -1, rate_model,
+generate_sequences <- function(phylogeny, branch_rate, root_sequence,
+                               rng_seed = -1, rate_model,
                                rate_per_nt = FALSE) {
     # We need to convert the phylogeny into a newick tree for seq-gen
     # use mutations per site as branch lengths
@@ -44,6 +45,9 @@ generate_sequences <- function(phylogeny, root_sequence, rng_seed = -1, rate_mod
         # re-normalize it to mutations per site.
         phylogeny_local[, 4] <- phylogeny_local[, 4] / length(root_sequence)
     }
+    # Convert branch lengths in time to in E[subs per site]
+    phylogeny_local[, 4] <- phylogeny_local[, 4] * branch_rate
+
     # Build seq-gen call components
     newick_string <- SEEPS::phylogeny_to_newick(phylogeny = phylogeny_local,
                                                 mode = "mean")
@@ -116,6 +120,7 @@ seqgen <- function(input, opts) {
     unlink(tmp_file_work)
     return(data)
 }
+
 #' Convert a fasta string output by seq-gen to a dataframe
 #'
 #' A utility function to build a dataframe from a fasta string.
@@ -133,7 +138,8 @@ fasta_string_to_dataframe <- function(fasta_string)  {
         if (length(line) > 0) {
             if (substr(line, 1, 1) == ">") {
                 # This is a header line
-                data[[index, "name"]] <- substr(line, 2, length(line))
+                data[[index, "name"]] <- substring(line, 2, nchar(line) - 1)
+                # Strip off the leading ">" and tailing "_"
             } else {
                 # This is a sequence line
                 data[[index, "seq"]] <- line
