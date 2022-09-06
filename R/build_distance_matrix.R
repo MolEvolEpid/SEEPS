@@ -76,7 +76,7 @@ geneology_to_distance_matrix_classic <- function(geneology, spike_root = FALSE) 
 geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {  # nolint: object_length_linter
   # Convert a geneology to a pairwise difference matrix
   # spike_root option adds a row and column for a node at the root
-  if(spike_root) stop("This option is not yet implemented. See classic version.")
+  if (spike_root) stop("This option is not yet implemented. See classic version.")
   # number of leaf nodes
   M <- sum(geneology[, 6])  # nolint: object_name_linter
 
@@ -173,7 +173,6 @@ build_distance_matrix_from_df <- function(df, model="TN93", keep_root = FALSE) {
   # Rescale by sequence length to estimated # of mutations
   # The seqs are aligned already, so this is only the length of the first sequence
   distances <- distances * nchar(df$seq[1])
-  # print(distances)
 
   return(distances)
 }

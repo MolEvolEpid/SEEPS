@@ -58,8 +58,6 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         samples = target_sample[["samples"]],
         parents = simulator_result$parents,
         current_step = simulator_result$t_end)
-    # print("geneology: trans")
-    # print(geneology_transmission)
 
     # Convert time signals to # of mutations using a rate
     geneology <- SEEPS::stochastify_transmission_history(
@@ -93,8 +91,6 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         sample_times = res$sample_times,
         a = params[["a"]], b = params[["b"]],
         leaf_sample_ids = res$transformed_sample_indices)
-    # print("Phlyo bpb")
-    # print(phylogeny)
 
 
     # Convert the time signals into a # of mutations per site
@@ -149,7 +145,6 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         sort_order = reduced_matrix_trans$sort_indices)
     # Drop the sequences we didn't keep
     sequences <- sequences[reduced_mat_data$keep_indices, ]
-    # print(sequences)
     # Drop the rows/cols of the trans and phylo matrices we didn't keep
 
 

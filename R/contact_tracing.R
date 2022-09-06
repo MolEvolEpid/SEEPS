@@ -83,7 +83,7 @@ contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
 #'   If no sample is found after this number of attempts, `FALSE` is returned
 #' @return A list with three fields: "status", "samples", and "found"
 #' @export
-contact_traced_uniform_restarts_ids <- function(active, parents,
+contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: object_name_linter
                                                minimum_sample_size, p) {
 
     discovery_function <- uniform_discovery_factory(p = p)

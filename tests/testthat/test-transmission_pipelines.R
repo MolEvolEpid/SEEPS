@@ -62,5 +62,4 @@ test_that("Check bpb inputs", {
                 infection_times = res$transmission_times,
                 sample_times = res$sample_times,
                 leaf_sample_ids = res$transformed_sample_indices)
-    # print(phylogeny)
 })
