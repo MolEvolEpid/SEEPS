@@ -41,11 +41,10 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         spike_root = FALSE)
 
     # Simulate contact tracing on the contact network to identify a sample
-    target_sample <- SEEPS::contact_traced_uniform_ids(
+    target_sample <- SEEPS::contact_traced_uniform_restarts_ids(
         active = simulator_result[["active"]],
         parents = simulator_result[["parents"]],
         minimum_sample_size = params[["minimum_population"]],
-        max_attempts = 1000,  # Default is 1 attempt
         # probability of uncovering each contact
         p = params[["contact_tracing_discovery_probability"]])
 

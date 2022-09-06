@@ -113,6 +113,7 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
             # We have enough data, take the first set we discovered
             samples <- samples[1:minimum_sample_size]
             found <- sapply(results, function(x) x[["found"]])
+            break
         }
     }
 
