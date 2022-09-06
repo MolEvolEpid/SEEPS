@@ -27,12 +27,11 @@ test_that("Check pairwise distance matrix construction, 3 samples", {
     rownames(distance_matrix) <- NULL
     colnames(distance_matrix) <- NULL
     # This next test does consider machine tolerances
-    # print(distance_matrix)
     expect_equal(dim(distance_matrix), c(3, 3))
     expect_equal(diag(distance_matrix), rep(0, 3))
 })
 
-test_that("Check pairwise distance matrix construction, 3 samples", {
+test_that("Check pairwise distance matrix construction, 4 samples", {
 
 
     simulator_result <- get_mocked_simulator_result_1()
@@ -45,12 +44,12 @@ test_that("Check pairwise distance matrix construction, 3 samples", {
     geneology <- stochastify_transmission_history(geneology, rate = 4)
     # unpack
     geneology <- geneology$geneology
-    # print(geneology)
-    distance_matrix <- geneology_to_distance_matrix_classic(geneology = geneology)
-    # print(distance_matrix)
-    # print("ZZ")
+    # _c for classic
+    distance_matrix_c <- geneology_to_distance_matrix_classic(geneology = geneology)
     distance_matrix <- geneology_to_distance_matrix(geneology = geneology)
-    # print("AA")
-    # print(distance_matrix)
-    # print(rownames(distance_matrix))
+    expect_equal(rownames(distance_matrix), c("6", "7", "8", "10"))
+    expect_equal(colnames(distance_matrix), c("6", "7", "8", "10"))
+    expect_equal(base::isSymmetric.matrix(distance_matrix), TRUE)
+    # Check values against distance_matrix_c
+    expect_equal(unname(distance_matrix), distance_matrix_c)
 })
