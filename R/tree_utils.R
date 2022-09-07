@@ -32,11 +32,10 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu", label_mode = "local") {
     # So g_2_l[global] = local for O(1) lookup
     branches <- character(n_nodes)  # Sub-tree at each branch
     # Fill in the names of the leaf nodes
-    names <- lapply(1:M, function(x) paste0(x, "_"))
+    names <- lapply(inds, function(x) paste0(x, "_"))
     branches[1:M] <- names
     merge_nodes <- vector("list", length = n_nodes)
-
-    for (index in 1:(n_nodes-1)) {
+    for (index in 1:(n_nodes - 1)) {
         parent <- phylogeny[index, 2]  # Get the parent
         if (is.null(merge_nodes[[parent]])) { # First offspring
             merge_nodes[[parent]] <- index
