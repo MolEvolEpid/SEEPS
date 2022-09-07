@@ -113,21 +113,29 @@ geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {  # nol
       mrca_mat[global_to_local[l], global_to_local[k]] <- pp
     }
   }
-
   for (k in 1:(M - 1)) {
+    # We need to convert to the leaf indexing (col 6)
+    # to start in the correct place
+    k_abs <- inds[k]
     for (l in (k + 1):M) {
+      l_abs <- inds[l]
+      # We need to convert to the leaf indexing (col 6)
+      # to start in the correct place
+
+      # Get the MRCA we want to stop at
       finally <- mrca_mat[k, l]
 
-      holder <- ind_par_mat[k, 2]
-      sumhold <- ind_par_mat[k, 5]
+      # Trace the first arm back to the MRCA
+      holder <- ind_par_mat[k_abs, 2]
+      sumhold <- ind_par_mat[k_abs, 5]
       while (holder != finally) {
         sumhold <- sumhold + ind_par_mat[holder, 5]
         holder <- ind_par_mat[holder, 2]
-
       }
 
-      holder <- ind_par_mat[l, 2]
-      sumhold <- sumhold + ind_par_mat[l, 5]
+      # Trace the other arm back to the MRCA
+      holder <- ind_par_mat[l_abs, 2]
+      sumhold <- sumhold + ind_par_mat[l_abs, 5]
       while (holder != finally) {
         sumhold <- sumhold + ind_par_mat[holder, 5]
         holder <- ind_par_mat[holder, 2]
@@ -157,13 +165,13 @@ build_distance_matrix_from_df <- function(df, model="TN93", keep_root = FALSE) {
   # Build a distance matrix from a dataframe using Ape
   # spike_root option adds a row and column for a node at the root
 
+  if (!keep_root) {
+    # If there is a row with name "root", remove it
+    df <- df[df$name != "root", ]
+  }
   # Convert the dataframe to a DNAbin through a list
   clean_data <- unlist(sapply(as.list(df$seq), tolower))
   clean_data <- sapply(clean_data, strsplit, "")
-  if (!keep_root) {
-    clean_data <- clean_data[1:(length(clean_data) - 1)]  # Root is always last
-    # Todo: This is a hack. We should be able to do this without the -1
-  }
   seqs <- ape::as.DNAbin(clean_data)
   names(seqs) <- df$name[1:length(clean_data)]  # nolint: seq_linter
   # Todo: This is a hack. We should be able to do this without the 1:length
