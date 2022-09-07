@@ -52,7 +52,7 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
     newick_string <- SEEPS::phylogeny_to_newick(phylogeny = phylogeny_local,
                                                 mode = "mean",
                                                 label_mode = "abs")
-    print(newick_string)
+
     newick_string <- SEEPS::add_root_to_newick(newick_string)  # Add in the root node
     model_string <- " -mGTR"
     rate_string <- paste0("-r", rate_model["a2c"], ",", rate_model["a2g"], ",",
@@ -78,7 +78,6 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
 
     # Convert to a fasta file
     fasta <- phylip_to_fasta(seqgen_result)
-    cat(fasta)
     return(fasta)
 }
 
@@ -132,17 +131,41 @@ seqgen <- function(input, opts) {
 #'
 #' @return A dataframe with the "seq" and "name" columns
 #' @export
-fasta_string_to_dataframe <- function(fasta_string)  {
+fasta_string_to_dataframe <- function(fasta_string, trim = TRUE, include_root = FALSE) {
     # Convert a fasta string to a dataframe
     lines <- unlist(strsplit(fasta_string, split = "\n"))
     data <- data.frame(seq = I(list()), name = I(list()))
     index <- 1
+    skip_flag <- FALSE
     for (line in lines) {
         if (length(line) > 0) {
             if (substr(line, 1, 1) == ">") {
                 # This is a header line
+                # if trim , check that the name is not zero and has characters
+                # if not, skip this line
+                if (trim) {
+                    # Check name before we add it
+                    if (substring(line, 2, nchar(line)) == "") {
+                        skip_flag <- TRUE
+                        next
+                    }
+                    if (substring(line, 2, nchar(line)) == "0_") {
+                        skip_flag <- TRUE
+                        next
+                    }
+                    if (!include_root && substring(line, 2, nchar(line)) == "root") {
+                        skip_flag <- TRUE
+                        next
+                    }
+                }
                 data[[index, "name"]] <- substring(line, 2, nchar(line) - 1)
                 # Strip off the leading ">" and tailing "_"
+            } else if (skip_flag) {
+                # We've already skipped this line, so skip the sequence
+                skip_flag <- FALSE
+                # Reset the flag
+                next
+                # Go to next iteration
             } else {
                 # This is a sequence line
                 data[[index, "seq"]] <- line
