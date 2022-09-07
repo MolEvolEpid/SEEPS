@@ -40,7 +40,7 @@ contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
     termination_function <- sufficient_data_data_factory(
         minimum_size = 2 * minimum_sample_size)
     # Call the contact tracing engine
-    initial_detections <- sample(active, length(sample), replace = FALSE)
+    initial_detections <- sample(active, length(active), replace = FALSE)
     result <- contact_tracing_engine(detected_id = initial_detections,
                                      active = active,
                                      parents = parents,
@@ -79,9 +79,8 @@ contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
 #' @param parents A matrix encoding the transmission history
 #' @param minimum_sample_size The minimum number of individuals to form a sample
 #' @param p The probability of discovering each contact during tracing
-#' @param max_attempts Maximum number of attempts to perform to obtain a sample.
-#'   If no sample is found after this number of attempts, `FALSE` is returned
-#' @return A list with three fields: "status", "samples", and "found"
+#' @return A list with four fields: "status", "samples", "success", and "found"
+#' if the algorithm fails to find a sample, FALSE is returned instead
 #' @export
 contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: object_name_linter
                                                minimum_sample_size, p) {
@@ -90,39 +89,43 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
     termination_function <- sufficient_data_data_factory(
         minimum_size = minimum_sample_size)
     # Call the contact tracing engine
-    initial_detections <- sample(active, length(sample), replace = FALSE)
+    initial_detections <- sample(active, length(active), replace = FALSE)
     results <- list()
     attempt_counter <- 1
+    samples <- c()
     target_size <- minimum_sample_size  # We modify this every time we restart
     repeat {  # do-while pattern
+        # Remove any discovered nodes from initial_detections
+        initial_detections <- initial_detections[!(initial_detections %in% samples)]
         result <- contact_tracing_engine(detected_id = initial_detections,
                                         active = active,
                                         parents = parents,
                                         minimum_size = target_size,
                                         discovery_function = discovery_function,
                                         termination_function = termination_function,
-                                        max_attempts = length(active))  # Do not try and repeat nodes
+                                        max_attempts = 1)  # Do not try and repeat nodes
         # Check the output before we return
         results[[attempt_counter]] <- result
+        attempt_counter <- attempt_counter + 1
         # concatenate the results
-        samples <- unique(sapply(results, function(x) x[["samples"]]))
+        samples <- unique(unlist(sapply(results, function(x) x[["samples"]])))
         # Now update the target size by subtracting off the number of samples we have
         target_size <- target_size - length(samples)
-
+        # while
         if (length(samples) >= minimum_sample_size) {
             # We have enough data, take the first set we discovered
             samples <- samples[1:minimum_sample_size]
-            found <- sapply(results, function(x) x[["found"]])
+            found <- unique(unlist(sapply(results, function(x) x[["found"]])))
             break
         }
     }
 
     # Now update the list we're going to return
-    results[["success"]] <- TRUE
-    results[["samples"]] <- samples
-    results[["found"]] <- found
-    results[["status"]] <- paste("Found enough data with",
-                                 attempt_counter, "attempts")
+    result[["success"]] <- TRUE
+    result[["samples"]] <- samples
+    result[["found"]] <- found
+    result[["status"]] <- paste("Found enough data with",
+                                attempt_counter - 1, "attempt(s)")
     if (result[["success"]]) {
         return(result)
     } else {
@@ -170,7 +173,8 @@ contact_tracing_engine <- function(detected_id,
     attempts <- 1
     while (TRUE) {
         # try
-        starting_id <- detected_id[[(attempts %% length(attempts)) + 1]]
+        start_index <- (attempts %% length(detected_id)) + 1
+        starting_id <- detected_id[[start_index]]
         result <- contact_tracing_core(detected_id = starting_id,
                                        active = active, parents = parents,
                                        discovery_function = discovery_function,

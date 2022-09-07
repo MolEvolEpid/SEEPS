@@ -25,6 +25,42 @@ test_that("contact_tracing: contact_traced_uniform_ids() works", {
     expect_equal(result, FALSE)
 })
 
+test_that("contact_tracing: contact_traced_uniform_restarts_ids() works", {
+    # Get a simple set of parents
+    parents <- t(matrix(c(0, 1, 1, 2, 3, 0, 1, 1, 2, 2),
+                        nrow = 2, ncol = 5, byrow = TRUE))
+    active <- c(1, 2, 3, 4, 5)
+    # First check we recover everybody with p=1 discovery rate
+    result <- contact_traced_uniform_restarts_ids(active = active,
+                                                  parents = parents,
+                                                  p = 1,
+                                                  minimum_sample_size = 5)
+    # Check for success
+    expect_equal(result[["success"]], TRUE)
+    # Check we found everything
+    expect_equal(result[["samples"]], c(1, 2, 3, 4, 5))
+    # Expect we explored everything
+    expect_equal(sort(result[["found"]]), c(1, 2, 3, 4, 5))
+    # found list won't be sorted
+
+    # Check completion status
+    expect_equal(result[["status"]], "Found enough data with 1 attempt(s)")
+    # Repeat for p=0.5
+    set.seed(1947)  # with p=1, we didn't really need RNG, here we do
+    result <- contact_traced_uniform_restarts_ids(active = active,
+                                                  parents = parents,
+                                                  p = 0.05,
+                                                  minimum_sample_size = 5)
+    # Expect we succeeded
+    expect_equal(result[["success"]], TRUE)
+    # Expect that we found everything
+    expect_equal(sort(result[["samples"]]), c(1, 2, 3, 4, 5))
+    # Expect we explored everything
+    expect_equal(sort(result[["found"]]), c(1, 2, 3, 4, 5))
+    print(result)
+
+})
+
 test_that("contact_tracing: test data retrieval", {
     parents <- t(matrix(c(0, 1, 1, 2, 3, 0, 1, 1, 2, 2),
                         nrow = 2, ncol = 5, byrow = TRUE))
@@ -51,5 +87,27 @@ test_that("contact_tracing: test data retrieval", {
     # Key for no offpsrings is NULL
     expect_null(connections[["secondary_infections"]])
     expect_null(connections[["secondary_times"]])
+
+})
+
+# Next check that contact tracing works on a real example
+# We'll use get_mocked_simulator_result_1 for data
+# and then check that we can recover the index case
+# and all of its secondary infections
+test_that("Contact tracing on simulation run with restarts works", {
+    data <- get_mocked_simulator_result_1()
+    active <- data[["active"]]
+    parents <- data[["parents"]]
+    # Call the contact tracing
+    set.seed(1947)
+    result <- contact_traced_uniform_restarts_ids(active = active,
+                                                  parents = parents,
+                                                  p = 1,
+                                                  minimum_sample_size = 5)
+    # Check for success
+    expect_equal(result[["success"]], TRUE)
+    # Check we found five individuals
+    expect_equal(length(result[["samples"]]), 5)
+    expect_equal(result[["status"]], "Found enough data with 1 attempt(s)")
 
 })
