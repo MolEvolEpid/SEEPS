@@ -20,10 +20,10 @@ Description: A modular, modern simulation suite and toolkit for simulating trans
     phylogenies, and evolutionary pairwise distance matrices under different models and assumptions
     for viral/sequence evolution. While intially developed for HIV, SEEPS offers modular
     utilities for custom workflows for extension beyond HIV.
-License: BSD_3_clause + LICENSE
+License: BSD_3_clause + file LICENSE
 maintainer: Michael D. Kupperman <mkupperman@lanl.gov>
 Encoding: UTF-8
-LazyData: false
+LazyData: true
 Suggests:
     testthat (>= 2.1.0),
     rlang (>= 1.0.0)
@@ -35,4 +35,4 @@ Imports:
     stats
 RoxygenNote: 7.2.1
 Depends:
-    R (>= 2.10)
+    R (>= 3.5.0)
