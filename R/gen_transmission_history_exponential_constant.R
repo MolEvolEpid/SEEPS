@@ -55,6 +55,9 @@ gen_transmission_history_exponential_constant <- function(minimum_population, #n
             end_step <- c(end_step, curr_step + sample(13:36, tot_offsprings, replace = TRUE)
 
             )
+        } else {
+            # If we can't grow, set the update increments to 0
+            tot_offsprings <- 0
         }
 
         # Remove old individuals from active population
@@ -68,6 +71,7 @@ gen_transmission_history_exponential_constant <- function(minimum_population, #n
             birth_step <- birth_step[-inds_rem]
         }
         # Update global indexes/pointers
+        print(c(active_index, tot_offsprings, curr_step))
         curr_step <- curr_step + 1
         active_index <- active_index + tot_offsprings
     }
