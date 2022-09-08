@@ -62,7 +62,6 @@ show_available_sequences <- function() {
     organism_names <- names(pkgenv$seq_store)  # nolint: object_usage_linter
     # Print the organism names
     cat(organism_names, "\n")
-    return(NULL)
 }
 
 #' Show the list of available regions for a provided reference sequence
