@@ -71,7 +71,6 @@ gen_transmission_history_exponential_constant <- function(minimum_population, #n
             birth_step <- birth_step[-inds_rem]
         }
         # Update global indexes/pointers
-        print(c(active_index, tot_offsprings, curr_step))
         curr_step <- curr_step + 1
         active_index <- active_index + tot_offsprings
     }
