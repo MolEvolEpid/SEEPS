@@ -20,6 +20,7 @@
 #'  discretized gamma heterogeneity (`ncat`).
 #' @seealso geneology_to_phylogeny_bpb
 #' @importFrom rngtools RNGseed
+#' @importFrom phyclust seqgen
 #' @export
 generate_sequences <- function(phylogeny, branch_rate, root_sequence,
                                rng_seed = -1, rate_model,
@@ -54,16 +55,17 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
                                                 label_mode = "abs")
 
     newick_string <- SEEPS::add_root_to_newick(newick_string)  # Add in the root node
-    model_string <- " -mGTR"
-    rate_string <- paste0("-r", rate_model["a2c"], ",", rate_model["a2g"], ",",
-                          rate_model["a2t"], ",", rate_model["c2g"], ",",
-                          rate_model["c2t"], ",", rate_model["g2t"])
-    freq_string <- paste0(" -f", rate_model["fa"], ",", rate_model["fc"], ",",
-                          rate_model["fg"], ",", rate_model["ft"])
-    i_string <- paste0(" -i", rate_model["i"])
-    gamma_string <- paste0(" -a", rate_model["alpha"], " ", " -g", rate_model["ncat"])
+    # Be careful! Phyclust does not tolerate any extra spaces in the opts
+    model_string <- "-mGTR"
+    rate_string <- paste0("-r", rate_model["a2c"], " ", rate_model["a2g"], " ",
+                          rate_model["a2t"], " ", rate_model["c2g"], " ",
+                          rate_model["c2t"], " ", rate_model["g2t"])
+    freq_string <- paste0("-f", rate_model["fa"], " ", rate_model["fc"], " ",
+                          rate_model["fg"], " ", rate_model["ft"])
+    i_string <- paste0("-i", rate_model["i"])
+    gamma_string <- paste0("-a", rate_model["alpha"], " ", "-g", rate_model["ncat"])
     # relaxed phylip format is easier to parse,
-    fmt_string <- paste(" -op", "-k1", "-q")  # -q for quiet
+    fmt_string <- paste("-op", "-k1", "-q")  # -q for quiet
 
     input <- paste0("1 ", nchar(root_sequence), "\nroot ", root_sequence,
                     "\n1\n", newick_string)
@@ -74,8 +76,7 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
     # Call seq-gen
     # This uses the phyclust C library under-the-hood to avoid an issue with
     # the input parser in phyclust's R interface.
-    seqgen_result <- seqgen(input = input, opts = call_opts)
-
+    seqgen_result <- phyclust::seqgen(input = input, opts = call_opts)
     # Convert to a fasta file
     fasta <- phylip_to_fasta(seqgen_result)
     return(fasta)
@@ -97,30 +98,6 @@ phylip_to_fasta <- function(phylip_string) {
         }
     }
     return(fasta_vector)
-}
-
-seqgen <- function(input, opts) {
-    # If phyclust is not loaded, we need to load it here
-
-    # Setup a temp file for the input data
-    tmp_fname_data <- paste0("seqgen.", Sys.getpid(), ".temp.data")
-    tmp_fname_work <- paste0("seqgen.", Sys.getpid(), ".temp.work")
-    # Tie name to PID so that it is unique over all instances of R
-    tmp_file_data <- tempfile(tmp_fname_data)
-    tmp_file_work <- tempfile(tmp_fname_work)
-    write(input, file = tmp_file_data, sep = "\n")
-    sopts <- unlist(strsplit(opts, " "))
-    sopts <- sopts[sopts != ""]  # Drop empty strings
-    cmd <- c("seq-gen", sopts, tmp_file_data)
-    # Call seq-gen
-    .Call("R_seq_gen_main", cmd, tmp_file_work, PACKAGE = "phyclust")
-    data <- readLines(con = tmp_file_work, warn = FALSE)
-    # Drop any empty lines from the output
-    data <- data[data != ""]
-    # We're done. Release the temp files.
-    unlink(tmp_file_data)
-    unlink(tmp_file_work)
-    return(data)
 }
 
 #' Convert a fasta string output by seq-gen to a dataframe
