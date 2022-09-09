@@ -104,6 +104,12 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         geneology = phylogeny$geneology,
         spike_root = FALSE)
 
+    # Re-order the matrix to match the sampling order
+    # Useful so we can compare between matrices
+    new_order <- order(match(as.numeric(rownames(matrix_phylo)), target_sample$sample))
+    matrix_phylo <- matrix_phylo[new_order, new_order]
+
+
     # Take a subsample of closest neighbors
     reduced_matrix_phylo <- SEEPS::reduce_large_matrix(
         oversampled_matrix = matrix_phylo,
@@ -115,7 +121,12 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
     ############ Simulate sequences from phylogeny for third matrix ############
 
     # Get a the rate model for V3
-    rate_model <- SEEPS::get_V3_rate_model()
+    if (is.null(params[["nonzero_I"]])) {
+        # If the user does not specify a nonzero_I, then we assume that the
+        # user wants to use the default value of TRUE (I>0)
+        params[["nonzero_I"]] <- TRUE
+    }
+    rate_model <- SEEPS::get_V3_rate_model(nonzero_I = params[["nonzero_I"]])
 
 
     # Call Seq-Gen to generate sequences from the provided reference sequence.
@@ -132,7 +143,11 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
 
     # Now build a pairwise distance matrix from the dataframe
     matrix_seq <- SEEPS::build_distance_matrix_from_df(sequences, model = "TN93")
-    matrix_seq <- matrix_seq[rownames(matrix_trans), colnames(matrix_trans)]
+    # Re-order the matrix to match the sampling order
+    # Useful so we can compare between matrices
+    new_order <- order(match(as.numeric(rownames(matrix_seq)), target_sample$sample))
+    matrix_seq <- matrix_phylo[new_order, new_order]
+
 
     ################# Reduce matrices through nearest neighbor #################
 

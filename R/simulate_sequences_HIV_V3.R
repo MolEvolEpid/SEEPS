@@ -59,7 +59,12 @@ simulate_sequences_HIV_V3 <- function(params) {  # nolint: object_name_linter
             rate = params[["mutation_rate"]] / 12)
 
     # Get a the rate model for V3
-    rate_model <- SEEPS::get_V3_rate_model()
+    if (is.null(params[["nonzero_I"]])) {
+        # If the user does not specify a nonzero_I, then we assume that the
+        # user wants to use the default value of TRUE (I>0)
+        params[["nonzero_I"]] <- TRUE
+    }
+    rate_model <- SEEPS::get_V3_rate_model(nonzero_I = params[["nonzero_I"]])
 
     # Get the HIV1 reference sequence for V3
     V3_sequence <- SEEPS::lookup_sequence_by_name(organism_name = "HIV1",  # nolint: object_name_linter

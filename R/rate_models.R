@@ -14,14 +14,15 @@
 #'
 #' Estimates for GTR+I+G rate model parameter from [Leitner et al. 1997] on the
 #' Swedish transmission chain on envelope V3 region.
-#'
+#' @param nonzero_I Boolean indicating whether to use the I parameter (invariant
+#' sites) or not. Default is `TRUE`(0.68). If `FALSE`, the I parameter is set to 0.
 #' @return A list of rate model parameters.
 #' @seealso generate_sequences generate_rate_model
 #' @examples
 #' rate_model <- get_V3_rate_model()
 #'
 #' @export
-get_V3_rate_model <- function() { # nolint: object_name_linter
+get_V3_rate_model <- function(nonzero_I = TRUE) { # nolint: object_name_linter
     rate_model <- list(
         a2c = 0.594, a2g = 1, # parameter f = 1 is the reference
         a2t = 0.186, c2g = 0.125,
@@ -39,6 +40,11 @@ get_V3_rate_model <- function() { # nolint: object_name_linter
         # ncat is the number of categories
         alpha = 0.384, ncat = 8
     )
+    if (!nonzero_I) {
+        print("Setting i to zero")
+        rate_model[["i"]] <- 0
+
+    }
     return(rate_model)
 }
 
