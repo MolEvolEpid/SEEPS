@@ -146,7 +146,7 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
     # Re-order the matrix to match the sampling order
     # Useful so we can compare between matrices
     new_order <- order(match(as.numeric(rownames(matrix_seq)), target_sample$sample))
-    matrix_seq <- matrix_phylo[new_order, new_order]
+    matrix_seq <- matrix_seq[new_order, new_order]
 
 
     ################# Reduce matrices through nearest neighbor #################
