@@ -33,7 +33,7 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu", label_mode = "local") {
     branches <- character(n_nodes)  # Sub-tree at each branch
     # Fill in the names of the leaf nodes
     names <- lapply(inds, function(x) paste0(x, "_"))
-    branches[1:M] <- names
+    branches[inds] <- names  # place names where they are expected by the phylogeny
     merge_nodes <- vector("list", length = n_nodes)
     for (index in 1:(n_nodes - 1)) {
         parent <- phylogeny[index, 2]  # Get the parent
