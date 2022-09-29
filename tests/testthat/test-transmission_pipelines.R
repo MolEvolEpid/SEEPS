@@ -53,10 +53,13 @@ test_that("Check bpb inputs", {
     sample <- c(7, 9, 10)
     res <- reduce_transmission_history_bpb(samples = sample,
             parents = simulator_result$parents, current_step = simulator_result$t_end)
-    expect_equal(res$parents, c(0, 1, 2, 3, 4, 3))
-    expect_equal(res$transmission_times, c(0, 1, 2, 3, 4, 4))
-    expect_equal(res$sample_times, c(1.001, 2.001, 4.001, 6, 6, 6))
-    expect_equal(res$transformed_sample_indices, c(0, 0, 0, 7, 9, 10))
+    print(simulator_result$parents[1:12, ])
+    print(res)
+
+    expect_equal(res$parents, c(0, 1, 2, 1, 1, 3, 4, 5))
+    expect_equal(res$transmission_times, c(0, 1, 2, 2, 3, 3, 4, 4))
+    expect_equal(res$sample_times, c(3.001, 2.001, 3.001, 4.001, 4.001, 6, 6, 6))
+    expect_equal(res$transformed_sample_indices, c(0, 0, 0, 0, 0, 7, 9, 10))
     # Now run BioPhyBreak codes
     phylogeny <- geneology_to_phylogeny_bpb(transmission_history = res$parents,
                 infection_times = res$transmission_times,

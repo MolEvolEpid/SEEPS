@@ -40,7 +40,7 @@ gen_transmission_history_exponential_constant <- function(minimum_population, #n
             # Cap offspring at the target
             tot_offsprings <- ceiling(min(maximum_population_target - length_active, sum(offsprings)))
             # Assign parents using the sampled rates/weights
-            prts <- sample(1:length_active, tot_offsprings, replace = TRUE)
+            prts <- sample(1:length_active, tot_offsprings, replace = TRUE, prob = offsprings)
             # Record parents
             if ((active_index + tot_offsprings - 1) > dim(parents)[1]) {
                 # Double the table size. This should not need to occur, but will break the simulation

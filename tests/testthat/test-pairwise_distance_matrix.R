@@ -17,7 +17,7 @@ test_that("Check pairwise distance matrix construction, 3 samples", {
     expect_equal(base::isSymmetric.matrix(distance_matrix), TRUE)
     # Check values against manual construction
     # Expect row names of 7,9,10, with distances of 7:9, 7:10, 9:10
-    expected_matrix <- c(0, 15, 18, 15, 0, 21, 18, 21, 0)
+    expected_matrix <- c(0, 40, 44, 40, 0, 44, 44, 44, 0)
     expected_matrix <- matrix(expected_matrix, nrow = 3, ncol = 3)
     rownames(expected_matrix) <- c(7, 9, 10)
     colnames(expected_matrix) <- c(7, 9, 10)
