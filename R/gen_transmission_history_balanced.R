@@ -1,3 +1,15 @@
+#'Generate a transmission history for a given number of individuals under a optimally balanced tree
+#'
+#' Simulate a balanced transmission tree with a given number of individuals. If the `population_size` is a power of 2,
+#' then the tree will be unique up to relabeling the tips. If the `population_size` is not a power of 2, then the tree
+#' that minimizes Sackin's index is not unique. To constrain the solution, we build the tree programmatically. We
+#' convert each leaf node to a cherry in the initial layer, to create a new layer of leaves. We repeat until we have
+#' a `population_size` number of leaves. As a result, we will always find the shortest tree with the prescribed number
+#' of leaves that is perfectly balanced.
+#'
+#' @param n number of individuals to have in the final layer
+#'
+#' @export
 gen_transmission_history_balanced_tree <- function(population_size, #nolint: object_length_linter
                               spike_root = FALSE) {
     # Simulate a balanced tree wih `population_size` leaves.
