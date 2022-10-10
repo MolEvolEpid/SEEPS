@@ -44,7 +44,9 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
     if (rate_per_nt) {
         # If the given mutation rate is in mutations per sequence, we need to
         # re-normalize it to mutations per site.
-        phylogeny_local[, 4] <- phylogeny_local[, 4] / length(root_sequence)
+        phylogeny_local[, 4] <- phylogeny_local[, 4] / max(length(root_sequence), nchar(root_sequence))
+        # The sequence could be a vector of characters or a string, so we need to use max
+        # as one will be nonzero and the other will be 1.
     }
     # Convert branch lengths in time to in E[subs per site]
     phylogeny_local[, 4] <- phylogeny_local[, 4] * branch_rate
