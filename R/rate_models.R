@@ -41,13 +41,41 @@ get_V3_rate_model <- function(nonzero_I = TRUE) { # nolint: object_name_linter
         alpha = 0.384, ncat = 8
     )
     if (!nonzero_I) {
-        print("Setting i to zero")
         rate_model[["i"]] <- 0
-
     }
     return(rate_model)
 }
 
+#' Rate model for pol estimated from the Swedish transmission chain
+#'
+#' Estimates for GTR+I+G rate model parameter on the
+#' Swedish transmission chain on pol region. Follow up analysis by Lundgren et al.
+#' [2022] on the Swedish transmission chain on pol region.
+
+#' @param nonzero_I Boolean indicating whether to use the I parameter (invariant
+#' sites) or not. Default is `TRUE`(0.255). If `FALSE`, the I parameter is set to 0.
+#' @return A list of rate model parameters.
+#' @seealso generate_sequences generate_rate_model
+
+get_pol_rate_model <- function(nonzero_I = FALSE) {  # nolint: object_name_linter
+    rate_model <- list(
+        a2c = -1, a2g = 1, # Need to get numbers here
+        a2t = -1, c2g = -1,
+        c2t = -1, g2t = -1,
+        fa = 0.3995, fc = 0.1677,
+        fg = 0.2487, ft = 0.1841,
+        # i is observed fraction. With a larger sample,
+        # this will be too low.
+        i = 0.255,
+        # alpha is the shape parameter for the discrete gamma
+        # ncat is the number of categories
+        alpha = 0.015, ncat = 8
+    )
+    if (!nonzero_I) {
+        rate_model[["i"]] <- 0
+    }
+    return(rate_model)
+}
 
 #' Rate model for gag p17 estimated from the Swedish transmission chain
 #'
