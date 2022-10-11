@@ -33,16 +33,16 @@ gen_transmission_history_balanced_tree <- function(population_size, #nolint: obj
     birth_step <- c(1)
     # calculate the depth of a binary tree needed for population_size leaves
     # We're going to do a 2-index approch.
-    parent_vector <- c(1)
-    offspring_vector <- c(2,3)
+    parent_vector <- c(0)
+    offspring_vector <- c(2)
     pointer <- 2
-    current_depth <- 1
+    current_depth <- 2
     flag <- TRUE
     while (flag) {
         # Shuffle the pointers for the index vectors
         parent_vector <- offspring_vector
         # Build out a new offspring vector
-        offspring_vector <- (2 ** current_depth):((2 ** (current_depth + 1)) - 1)
+        offspring_vector <- (2 ** (current_depth-1)+1):((2 ** (current_depth)))
         # Enforce the cap
         vector_length <- length(offspring_vector)
         if (vector_length >= population_size) {  # We have extra population
