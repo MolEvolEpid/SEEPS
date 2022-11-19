@@ -91,6 +91,8 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
     # Call the contact tracing engine
     initial_detections <- sample(active, length(active), replace = FALSE)
     results <- list()
+    group_id_counter <- 1  # Track which group each individual was sampled from
+    group_ids <- c()
     attempt_counter <- 1
     samples <- c()
     target_size <- minimum_sample_size  # We modify this every time we restart
@@ -105,16 +107,24 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
                                         termination_function = termination_function,
                                         max_attempts = 1)  # Do not try and repeat nodes
         # Check the output before we return
+        # A bit of a hack to get the group ids
+        result[["group_ids"]] <- group_id_counter + 0 * result[["samples"]]
+        group_id_counter <- group_id_counter + 1
         results[[attempt_counter]] <- result
         attempt_counter <- attempt_counter + 1
         # concatenate the results
-        samples <- unique(unlist(sapply(results, function(x) x[["samples"]])))
+        sampleStruct <- clean_sample_structure(results)
+        # Unpack
+        samples <- sampleStruct$samples
+        group_ids <- sampleStruct$group_ids
+
         # Now update the target size by subtracting off the number of samples we have
         target_size <- target_size - length(samples)
         # while
         if (length(samples) >= minimum_sample_size) {
             # We have enough data, take the first set we discovered
             samples <- samples[1:minimum_sample_size]
+            group_ids <- group_ids[1:minimum_sample_size]
             found <- unique(unlist(sapply(results, function(x) x[["found"]])))
             break
         }
@@ -123,6 +133,7 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
     # Now update the list we're going to return
     result[["success"]] <- TRUE
     result[["samples"]] <- samples
+    result[["group_ids"]] <- group_ids
     result[["found"]] <- found
     result[["status"]] <- paste("Found enough data with",
                                 attempt_counter - 1, "attempt(s)")
@@ -132,6 +143,19 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
         return(FALSE)
     }
 
+}
+
+clean_sample_structure <- function(results) {
+    # Return a list of unqiue samples along with the group id for each of them in two lists
+    # Create
+    all_samples <- unlist(sapply(results, function(x) x[["samples"]]))
+    all_group_ids <- unlist(sapply(results, function(x) x[["group_ids"]]))
+    df_merged = data.frame("samples"=I(all_samples), "group_ids"=I(all_group_ids))
+    df_merged <- df_merged[!duplicated(df_merged),]
+
+    # Return the two numeric vectors from the columns of df_merged by key
+    return(list("samples"=as.numeric(unlist(df_merged$samples)),
+                "group_ids"=as.numeric(unlist(df_merged$group_ids))))
 }
 
 ################################################################################
