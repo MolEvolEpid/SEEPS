@@ -151,7 +151,7 @@ clean_sample_structure <- function(results) {
     all_samples <- unlist(sapply(results, function(x) x[["samples"]]))
     all_group_ids <- unlist(sapply(results, function(x) x[["group_ids"]]))
     df_merged = data.frame("samples"=I(all_samples), "group_ids"=I(all_group_ids))
-    df_merged <- df_merged[!duplicated(df_merged),]
+    df_merged <- df_merged[!duplicated(df_merged$samples), ]
 
     # Return the two numeric vectors from the columns of df_merged by key
     return(list("samples"=as.numeric(unlist(df_merged$samples)),
