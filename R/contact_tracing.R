@@ -109,9 +109,6 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
         # Check the output before we return
         # A bit of a hack to get the group ids
         result[["group_ids"]] <- group_id_counter + 0 * result[["samples"]]
-        cat("\nGroup Found:\n")
-        print(result[["group_ids"]])
-        print(print(result[["samples"]]))
         group_id_counter <- group_id_counter + 1
         results[[attempt_counter]] <- result
         attempt_counter <- attempt_counter + 1
