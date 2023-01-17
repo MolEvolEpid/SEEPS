@@ -240,6 +240,25 @@ step <- function(state, parameters) {
     return(state)
 }
 
+#' Remove samples from the simulation
+#'
+#' Remove a set of samples from the simulation. Intended to be used with contact tracing, we expect
+#' individuals identified through contact tracing to be removed from the population of active (uncontrolled or undiagnosed)
+#' cases.
+#'
+#' Provide a state object and a vector of samples to remove. A new state object is returned with the samples removed.
+#'
+#' @export
+remove_samples <- function(state, samples) {
+    # 'Remove' samples from the simulation. This is done by setting their end_step to the current time.
+    # This emulates the removal of individuals due to sampling.
+    ids_rem <- which(state$active %in% samples)
+    state$active <- state$active[-ids_rem]
+    state$end_step <- state$end_step[-ids_rem]
+    state$birth_step <- state$birth_step[-ids_rem]
+    return(state)
+}
+
 #' Utility function to check that a state is (computationally) valid
 #'
 #' Check that the state object is a valid and has the correct list elements.
