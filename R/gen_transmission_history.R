@@ -184,8 +184,10 @@ clean_up <- function(state){
     # all of the internal state to be exposed to the user.
     # This is called once at the end of the simulation.
 
-        returned_data <- list("parents" = state$parents, "active" = state$active,
-                          "t_end" = state$curr_step, "total_offspring" = state$tot_offsprings)
+    returned_data <- list("parents" = state$parents, "active" = state$active,
+                          "t_end" = state$curr_step,
+                          "total_offspring" = state$tot_offsprings)
+    return(returned_data)
 }
 
 #' Perform a single step of the simulation
