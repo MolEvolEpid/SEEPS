@@ -260,3 +260,139 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
         "transformed_sample_indices" = leaf_indices
     ))
 }
+
+############################
+
+# A second version of the above function that allows for samples to be taken
+# at different times. This is useful for simulating coalescent trees with
+# multiple samples taken.
+
+############################
+
+#' @export
+reduce_transmission_history_bpb2 <- function( # nolint:object_length_linter
+                                            samples, parents, current_step) {
+    # samples is a list of samples taken at different times
+    # sample_times is a vector of times at which samples were taken
+    # samples[[1]] is a vector of samples taken at current_step[[1]]
+    leaves <- unlist(samples)
+    samples_list <- samples  # Store the list of samples
+    samples <- unlist(samples)  # Flatten the list of samples
+
+
+    # Infections increase monotonically. Adding new sequences gives increased index.
+    # Largest index in sample is largest number of individuals we need to consider.
+    # pre-allocate for speed, these could be large lists and we want to avoid a copy
+    parents_tree <- rep(-1, length = max(samples))
+    offspring_times <- rep(-1, length = max(samples))
+    # We'll use -1 as a status code for "not in the history. We'll need this for cleanup later.
+
+
+    for (sample in samples) {
+        exit_flag <- TRUE
+        while (exit_flag) {
+            # Get which infection we are going to back-prop  to
+            parent_index <- parents[sample, 1] #
+            # Record the parent for the newly found infection as the cause of the infection
+            parents_tree[sample] <- parent_index
+            # Record the birth time
+            if (offspring_times[sample] == -1) { # We don't know the parent, detect coalesence
+                offspring_times[sample] <- parents[sample, 2] # col 2 is for sample time
+                sample <- parent_index
+            } else { # We hit a coallecent event, we can stop now
+                exit_flag <- FALSE
+            }
+            if (sample == 0) { # We hit the root of the outbreak.
+                exit_flag <- FALSE
+            }
+        }
+    }
+
+    # TODO split this function here
+
+    # Now "trim" the lists and compute observation times.
+    trimmed_parents_tree <- parents_tree
+    trimmed_offspring_times <- offspring_times
+
+    leaf_locations_mask <- parents_tree == -2 # Create vector of FALSE
+    leaf_locations_mask[leaves] <- TRUE # Record locations
+    # Make a mask of the sample times, so we can account for the trimming
+    sample_time_vector <- rep(-1, length = length(parents_tree))  # -1 as status code
+    for (i in seq_along(samples_list)) {
+        # Store the index of the sample in the original list
+        sample_time_vector[samples_list[[i]]] <- i
+        # Don't convert to sample times yet, we need to trim the list first
+    }
+    leaf_indices <- as.integer(parents_tree == -2)  # Create vector of 0
+    leaf_indices[leaves] <- samples
+
+
+    exit_flag <- TRUE
+    index <- 1
+    while (exit_flag) {
+        value <- trimmed_parents_tree[index]
+        if (value == -1) {
+            # decrement the tail
+            mask <- trimmed_parents_tree >= index
+            # We cannot have values larger than `position` before the position
+            # no need to filter by position, but that might give a small speedup for large vectors
+            trimmed_parents_tree[mask] <- trimmed_parents_tree[mask] - 1
+            # Now shift the list and drop the -1
+            trimmed_parents_tree <- trimmed_parents_tree[-index]
+            trimmed_offspring_times <- trimmed_offspring_times[-index]
+            # Also update the vectors of leaf information
+            leaf_locations_mask <- leaf_locations_mask[-index]
+            leaf_indices <- leaf_indices[-index]
+            sample_time_vector <- sample_time_vector[-index]
+        }
+        if (index == length(trimmed_parents_tree)) {
+            # At the end. Exit now
+            exit_flag <- FALSE
+        } else {
+            if (value != -1) {
+                # If we modified the list, the position has a new value
+                # Only increase the index if we didn't change the list
+                index <- index + 1
+            }
+        }
+    }
+
+    # Function 3
+
+    # Now set the sample times
+    # For leaves, set the sample time to current_step
+    # for internal nodes, we need thier last offspring
+
+    internal_nodes_mask <- as.logical(1 - leaf_locations_mask)
+    end_times <- rep(-1, length(trimmed_parents_tree))
+    # end_times[leaf_locations_mask] <- current_step
+    # loop over the pairs of samples and set the end_times
+    for (i in seq_along(samples_list)) {
+        mask = sample_time_vector == i
+        end_times[mask] <- current_step[[i]]
+    }
+    internal_nodes <- which(internal_nodes_mask)
+
+    for (node in internal_nodes) {
+        # Get the offspring
+        offspring_indices <- which(trimmed_parents_tree == node)
+        # Get their generation times
+        times <- trimmed_offspring_times[offspring_indices]
+        # Record the largest generation time
+        end <- min(max(times) + 1e-3, Inf) # When to stop simulating
+        # Add in an epsilon for numerical stability,
+        end_times[node] <- end
+    }
+
+
+    return(list(
+        "parents" = trimmed_parents_tree,
+        "transmission_times" = trimmed_offspring_times,
+        # Record when samples were taken
+        "sample_times" = end_times,
+        # Record how many samples  there are. Either 0 (internal) or 1(leaf)
+        "samples_available" = 1 * leaf_locations_mask,
+        # The index of the sample in the original list
+        "transformed_sample_indices" = leaf_indices
+    ))
+}
