@@ -148,14 +148,14 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
 clean_sample_structure <- function(results) {
     # Return a list of unqiue samples along with the group id for each of them in two lists
     # Create
-    all_samples <- unlist(sapply(results, function(x) x[["samples"]]))
-    all_group_ids <- unlist(sapply(results, function(x) x[["group_ids"]]))
-    df_merged = data.frame("samples"=I(all_samples), "group_ids"=I(all_group_ids))
+    all_samples <- unlist(lapply(results, function(x) x[["samples"]]))
+    all_group_ids <- unlist(lapply(results, function(x) x[["group_ids"]]))
+    df_merged <- data.frame("samples"=I(all_samples), "group_ids"=I(all_group_ids))
     df_merged <- df_merged[!duplicated(df_merged$samples), ]
 
     # Return the two numeric vectors from the columns of df_merged by key
-    return(list("samples"=as.numeric(unlist(df_merged$samples)),
-                "group_ids"=as.numeric(unlist(df_merged$group_ids))))
+    return(list("samples" = as.numeric(unlist(df_merged$samples)),
+                "group_ids" = as.numeric(unlist(df_merged$group_ids))))
 }
 
 ################################################################################
