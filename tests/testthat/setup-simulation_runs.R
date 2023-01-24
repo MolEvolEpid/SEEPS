@@ -51,3 +51,37 @@ get_mocked_simulator_result_4 <- function() {
         spike_root = FALSE)
     return(simulator_result)
 }
+
+# mock 1A has two samples, but is a small simulation
+get_mocked_simulator_result_1A <- function() {
+
+    set.seed(1948)  # for reproducability
+    biphasic_rate_function <- SEEPS::get_biphasic_HIV_rate(list("R0" = 4)) # nolint: object_usage_linter
+    parameters <- SEEPS::wrap_parameters(
+        offspring_rate_fn = biphasic_rate_function,
+        minimum_population = 8,
+        maximum_population_target = 15,
+        total_steps = 0)
+    state <- SEEPS::initialize(parameters)
+    state <- SEEPS::gen_exp_phase(state, parameters)
+    samples_1 <- SEEPS::contact_traced_uniform_restarts_ids(active = state$active,
+                                                            parents = state$parents,
+                                                            p = 0.5,
+                                                            minimum_sample_size = 3)
+    # Now tell the simulation to remove these from active
+    time_1 <- state$curr_step
+    # print(time_1)
+    state <- SEEPS::remove_samples(state, samples_1$samples)
+    # Run a few steps forward to get a new state
+    state <- SEEPS::gen_const_phase(state, parameters, 5)
+    samples_2 <- SEEPS::contact_traced_uniform_restarts_ids(active = state$active,
+                                                            parents = state$parents,
+                                                            p = 0.5,
+                                                            minimum_sample_size = 3)
+    time_2 <- state$curr_step
+    # print(time_2)
+
+    simulator_result <- state
+    return(list("result" = simulator_result, "t1" = time_1, "t2" = time_2,
+                "s1" = samples_1, "s2" = samples_2))
+}
