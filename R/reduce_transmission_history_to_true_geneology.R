@@ -365,11 +365,13 @@ reduce_transmission_history_bpb2 <- function( # nolint:object_length_linter
 
     internal_nodes_mask <- as.logical(1 - leaf_locations_mask)
     end_times <- rep(-1, length(trimmed_parents_tree))
+    sample_batch <- rep(-1, length(trimmed_parents_tree))
     # end_times[leaf_locations_mask] <- current_step
     # loop over the pairs of samples and set the end_times
     for (i in seq_along(samples_list)) {
-        mask = sample_time_vector == i
+        mask <- sample_time_vector == i
         end_times[mask] <- current_step[[i]]
+        sample_batch[mask] <- i
     }
     internal_nodes <- which(internal_nodes_mask)
 
@@ -392,6 +394,8 @@ reduce_transmission_history_bpb2 <- function( # nolint:object_length_linter
         "sample_times" = end_times,
         # Record how many samples  there are. Either 0 (internal) or 1(leaf)
         "samples_available" = 1 * leaf_locations_mask,
+        # Denote which time point the samples came from.
+        "sample_group_vectors" = sample_batch,
         # The index of the sample in the original list
         "transformed_sample_indices" = leaf_indices
     ))
