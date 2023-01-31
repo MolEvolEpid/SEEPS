@@ -386,6 +386,8 @@ sim.coal.tree.m <- function(tt = NULL,  # nolint: object_name_linter
       # Store the (input) sample index into column 7
       if (!is.na(leaf_raw_ids[index]) && leaf_raw_ids[index] > 0) {
         phylogeny[index, 7] <- leaf_raw_ids[index]
+        # If we recorded a raw index, then we are a leaf node.
+        phylogeny[index, 6] <- 1
       }
       outer_node_status <- status[row, col]  # Get a +1 or -1
       if (outer_node_status == -1) {
@@ -401,7 +403,6 @@ sim.coal.tree.m <- function(tt = NULL,  # nolint: object_name_linter
   }
 
   phylogeny[, 5] <- phylogeny[, 4] / sum(phylogeny[, 4])  # normalize.
-  phylogeny[1:nInd, 6] <- leaf_times == max(leaf_times)  # All leaf nodes are sampled at the same end.
   # tip states
   tip_states <- vector()
   for (i in 1:nInd) {
