@@ -1,4 +1,5 @@
 # The previous simulation. Here for QA & unit testing.
+#' @export
 gen_transmission_history_exponential_constant_classic <- function(minimum_population, #nolint: object_length_linter
         offspring_rate_fn, maximum_population_target, total_steps,
                               spike_root = FALSE) {
@@ -162,13 +163,16 @@ gen_exp_phase <- function(state, parameters) {
 #' This function performs that step.
 #'
 #' @export
-gen_const_phase <- function(state, parameters, num_steps) {
+gen_const_phase <- function(state, parameters, num_steps, verbose = FALSE) {
     # Perform constant population growth until the simulation is complete.
     # Specify the number of steps to perform.
     if (num_steps > 0) {
         # Do the steps
         for (i in 1:num_steps) {
-            print("Performing a step")
+            if (verbose) {
+                print("Performing a step")
+            }
+
             state <- step(state, parameters)
         }
     }
@@ -179,7 +183,7 @@ gen_const_phase <- function(state, parameters, num_steps) {
 #' Clean up the simulation state and return the relevant data.
 #'
 #' @export
-clean_up <- function(state){
+clean_up <- function(state) {
     # Extract the relevant data from the simulation and return it. We do not need
     # all of the internal state to be exposed to the user.
     # This is called once at the end of the simulation.
@@ -203,14 +207,16 @@ step <- function(state, parameters) {
         # Sample offspring distribution
         offsprings <- parameters$offspring_rate_fn(current_step = state$curr_step, birth_step = state$birth_step)
         # Cap offspring at the target
-        state$tot_offsprings <- ceiling(min(parameters$maximum_population_target - state$length_active, sum(offsprings)))
+        state$tot_offsprings <- ceiling(min(parameters$maximum_population_target - state$length_active,
+                                            sum(offsprings)))
         # Assign parents using the sampled rates/weights
         prts <- sample(1:state$length_active, state$tot_offsprings, replace = TRUE, prob = offsprings)
         # Record parents
         if ((state$active_index + state$tot_offsprings - 1) > dim(state$parents)[1]) {
             # Double the table size. This should not need to occur, but will break the simulation
             # if we overflow the table. Default values are chosen with HIV dynamics in mind.
-            state$parents <- rbind(state$parents, matrix(0, max(parameters$total_steps, 12) * parameters$maximum_population_target, 2))
+            state$parents <- rbind(state$parents,
+                                   matrix(0, max(parameters$total_steps, 12) * parameters$maximum_population_target, 2))
         }
         state$parents[state$active_index:(state$active_index + state$tot_offsprings - 1), 1] <- state$active[prts]
         state$parents[state$active_index:(state$active_index + state$tot_offsprings - 1), 2] <- state$curr_step
@@ -283,30 +289,29 @@ validate_state <- function(state) {
         stop("Parents must be a matrix.")
     }
     if (!is.integer(state$active)) {
-        stop("Active must be an integer vector.")
+        warning("Active must only contain integers. This is not enforced by the type system.")
     }
     if (!is.integer(state$active_index)) {
-        stop("Active index must be an integer.")
+        warning("Active index must only contain integers. This is not enforced by the type system.")
     }
     if (!is.integer(state$end_step)) {
-        stop("End step must be an integer vector.")
+        warning("End step must only contain integers. This is not enforced by the type system.")
     }
     if (!is.integer(state$birth_step)) {
-        stop("Birth step must be an integer vector.")
+        warning("Birth step must only contain integers. This is not enforced by the type system.")
     }
     if (!is.integer(state$curr_step)) {
-        stop("The current step must be an integer.")
+        warning("The current step must be an integer. This is not enforced by the type system.")
     }
     if (!is.integer(state$total_offspring)) {
-        stop("Total offspring must be an integer.")
+        warning("Total offspring must be an integer. This is not enforced by the type system.")
     }
     if (!is.integer(state$length_active)) {
-        stop("length_active must be an integer.")
+        warning("length_active must be an integer. This is not enforced by the type system.")
     }
     # Check that only these attributes are present
     if (length(names(state)) != 8) {
-        stop("State has the wrong number of values.")
+        warning("State has the wrong number of values. This is not enforced by the type system.")
     }
-    # length_active
 
 }
