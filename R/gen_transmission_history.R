@@ -267,6 +267,24 @@ remove_samples <- function(state, samples) {
     return(state)
 }
 
+#' Keep a set of samples in the simulation
+#'
+#' Remove all other samples from the simulation. Intended to be used to represent a masking event,
+#' Where only a subset of the population is propagated forward in time.
+#'
+#' Provide a state object and a vector of samples to keep. A new state object is returned with only the samples kept.
+#'
+#' @export
+keep_samples <- function(state, samples) {
+    # 'Keep' samples in the simulation. This is done by setting the end_step of all other samples to the current time.
+    # This emulates the removal of individuals due to sampling.
+    ids_rem <- which(!(state$active %in% samples))
+    state$active <- state$active[-ids_rem]
+    state$end_step <- state$end_step[-ids_rem]
+    state$birth_step <- state$birth_step[-ids_rem]
+    return(state)
+}
+
 #' Utility function to check that a state is (computationally) valid
 #'
 #' Check that the state object is a valid and has the correct list elements.
