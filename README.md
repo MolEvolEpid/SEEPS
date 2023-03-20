@@ -6,10 +6,10 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-A modern and modular simulator for phylogenetics and phylodynamics.
+A modern and modular simulator for infectious disease phylogenetics and phylodynamics.
 SEEPS provides advanced simulation capabilities for population dynamics,
-population sampling techniques (random, contact-tracing), geneology and
-phylogeny simulation, and can construct both evolved sequences (using a
+population sampling techniques (random, contact-tracing), genealogy and
+phylogeny simulation, and can simulate both evolved sequences (using a
 provided reference) and pairwise distance matrices.
 
 <!-- One short paragraph about simulation -->
