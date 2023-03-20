@@ -77,13 +77,13 @@ simulate_classic_HIV <- function(params) {
         spike_root = FALSE)
 
     # Convert time signals to # of mutations using a rate
-    geneology <- stochastify_transmission_history(
-        transmission_history = transmission_history$geneology,
+    genealogy <- stochastify_transmission_history(
+        transmission_history = transmission_history$genealogy,
         rate=params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
 
-    # convert the geneology into a distance matrix
-    distance_matrix <- geneology_to_distance_matrix(
-        geneology = geneology$geneology,
+    # convert the genealogy into a distance matrix
+    distance_matrix <- genealogy_to_distance_matrix(
+        genealogy = genealogy$genealogy,
         spike_root = FALSE)
 
     # Now return the result. Additional metadata used above can be collected
