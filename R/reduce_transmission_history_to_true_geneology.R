@@ -26,6 +26,131 @@
 #' @export
 #'
 #' @importFrom stats rpois
+reduce_transmission_history_mt <- function(samples, parents,
+                                        current_step, spike_root = FALSE) {
+    samples_all <- unlist(samples)
+    sample_times <- unlist(
+        sapply(
+            1:length(samples),
+            function(i) {
+                rep(current_step[[i]], length(samples[[i]]))
+            }
+        )
+    )
+    samples <- samples_all  # Over-write the samples, now that we know when
+    # they were sampled
+
+    observation_size <- length(samples)
+    geneology <- matrix(0, 2 * observation_size, 7)
+    # Columns:
+    # 1. Local Individual ID (1:n, 0)
+    # 2. Parent ID (1:n, 0)
+    # 3. Time of infection (non-negative integers)
+    # 4. Branch length (non-negative integers)
+    # 5. Distances (normalized here, but will be filled later via sampling)
+    # 6. Leaf status (bool)
+    # 7. Absolute index - leaves only. Number from samples
+
+    geneology[1:(2 * observation_size - 1), 1] <- c(1:(2 * observation_size - 1))
+
+    # Taking into account of the sampling time
+    geneology[1:observation_size, 3] <- sample_times  # + rpois(observation_size, 6)
+    geneology[1:observation_size, 6] <- 1  # These are leaves
+    if (spike_root) {
+        # Sample date for the initial infection is 0, no tip adjustment
+        geneology[observation_size, 3] <- 0 # starts at the origin
+    }
+    # Set the initial inds for each node
+    original_samples <- samples
+    nNodes <- observation_size
+    IDs <- 1:observation_size
+    pp <- observation_size + 1
+
+
+    while (nNodes > 1) {
+        # Get the newest infection
+        ind <- which.max(parents[samples, 2])
+        # Get the parent of the newest infection
+        parent <- parents[samples[ind], 1]
+        # Is the parent is in the sample?
+        coall <- which(samples == parent)
+        if (length(coall) == 0) { # no
+            # Update the parent
+            samples[ind] <- parent
+        } else { # We have a coalescent event
+            # Store the sample time for the parent
+            geneology[pp, 3] <- parents[samples[ind], 2]
+            # Write the merge/coal/join information into the array
+            geneology[IDs[ind], 2] <- pp
+            # Record it for both parents
+            geneology[IDs[coall], 2] <- pp
+            if (!is.na(IDs[coall])) { # If we have sequences left, write the join time
+                # Only happens when we try to backprop from the first infection
+                if (geneology[IDs[coall], 3] < parents[samples[ind], 2]) {
+                    geneology[IDs[coall], 3] <- parents[samples[ind], 2]
+                }
+            }
+
+            # Store the sample ID in column 7
+            # We need to not have written a value, and be a leaf
+            if (geneology[IDs[ind], 7] == 0 && geneology[IDs[ind], 6] == 1) {
+                geneology[IDs[ind], 7] <- original_samples[ind]
+            }
+            if (geneology[IDs[coall], 7] == 0 && geneology[IDs[coall], 6] == 1) {
+                geneology[IDs[coall], 7] <- original_samples[coall]
+            }
+
+
+            IDs[coall] <- pp
+            samples <- samples[-ind]
+            original_samples <- original_samples[-ind]  # remove from copy
+            IDs <- IDs[-ind]
+            pp <- pp + 1
+            nNodes <- nNodes - 1
+        }
+    }
+    inds <- 1:(2 * observation_size - 1)
+    geneology[inds, 3] <- geneology[inds, 3] - geneology[(2 * observation_size - 1), 3]
+    # Subtract off from the root
+    geneology[inds, 3] <- max(geneology[inds, 3]) - geneology[inds, 3]
+    # Happens to place the root back at 0 if we spiked in the origin
+
+
+    inds <- 1:(2 * observation_size - 2)
+    # Convert absolute times to local (relative) differences.
+    geneology[inds, 4] <- geneology[geneology[inds, 2], 3] - geneology[inds, 3]
+    geneology[inds, 5] <- geneology[inds, 4] / (sum(geneology[inds, 4]))
+    return(list("geneology" = geneology))
+}
+
+#' Reduce simulation output to transmission history for a subset.
+#'
+#' Reduce a large simulation output to a smaller transmission history for a subset
+#' by tracing back the ancestory of each individual in the sample. If `spike_root`
+#' is `TRUE`, then the root of the tree is included in the geneology.
+#' We call this a geneology, rather than a phylogeny as it assumes that the
+#' transmission history is the phylogeny and no within-host diversity occurs.
+#'
+#' To include within host diversity, use `reduce_transmission_history_bpb` to
+#' extract a subst of the transmission history that we need for the phylogeny,
+#' and see  `geneology_to_phylogeny_bpb` to simulate within-host diversity
+#' and recover a true phylogeny.
+#'
+#' @param samples A vector of individuals (integers) to include in the sample.
+#' @param parents A matrix of parental individuals that encodes the transmission
+#'             history and sample times.
+#' @param current_step The current (absolute) time step in the simulation.
+#' @param spike_root A boolean indicating whether the geneology should
+#'            include the root of the outbreak or not. Default is `FALSE`.
+#'            This should be specified even if the founding infection is sampled,
+#'           as the root of the outbreak will have evolved since the founding event.
+#'
+#' @seealso reduce_transmission_history_bpb
+#' @return A list with 1 element: "geneology" a matrix of transmission history
+#'   that encodes an evolutionary tree.
+#' @export
+#'
+#' @importFrom stats rpois
 reduce_transmission_history <- function(samples, parents,
                                         current_step, spike_root = FALSE) {
     observation_size <- length(samples)
