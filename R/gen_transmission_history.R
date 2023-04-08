@@ -306,25 +306,25 @@ validate_state <- function(state) {
     if (!is.matrix(state$parents)) {
         stop("Parents must be a matrix.")
     }
-    if (!is.integer(state$active)) {
+    if (!is_integer(state$active)) {
         warning("Active must only contain integers. This is not enforced by the type system.")
     }
-    if (!is.integer(state$active_index)) {
+    if (!is_integer(state$active_index)) {
         warning("Active index must only contain integers. This is not enforced by the type system.")
     }
-    if (!is.integer(state$end_step)) {
+    if (!is_integer(state$end_step)) {
         warning("End step must only contain integers. This is not enforced by the type system.")
     }
-    if (!is.integer(state$birth_step)) {
+    if (!is_integer(state$birth_step)) {
         warning("Birth step must only contain integers. This is not enforced by the type system.")
     }
-    if (!is.integer(state$curr_step)) {
+    if (!is_integer(state$curr_step)) {
         warning("The current step must be an integer. This is not enforced by the type system.")
     }
-    if (!is.integer(state$total_offspring)) {
+    if (!is_integer(state$total_offspring)) {
         warning("Total offspring must be an integer. This is not enforced by the type system.")
     }
-    if (!is.integer(state$length_active)) {
+    if (!is_integer(state$length_active)) {
         warning("length_active must be an integer. This is not enforced by the type system.")
     }
     # Check that only these attributes are present
@@ -332,4 +332,8 @@ validate_state <- function(state) {
         warning("State has the wrong number of values. This is not enforced by the type system.")
     }
 
+}
+
+is_integer <- function(x) {
+    all(x == floor(x))
 }
