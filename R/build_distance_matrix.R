@@ -73,7 +73,7 @@ geneology_to_distance_matrix_classic <- function(geneology, spike_root = FALSE) 
 #' Reduce a geneology to a pairwise distance matrix.
 #'
 #' @export
-geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {  # nolint: object_length_linter
+geneology_to_distance_matrix <- function(geneology, mode="mu", spike_root = FALSE) {  # nolint: object_length_linter
   # Convert a geneology to a pairwise difference matrix
   # spike_root option adds a row and column for a node at the root
   if (spike_root) stop("This option is not yet implemented. See classic version.")
