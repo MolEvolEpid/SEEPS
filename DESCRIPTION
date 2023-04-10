@@ -26,7 +26,9 @@ Encoding: UTF-8
 LazyData: true
 Suggests:
     testthat (>= 2.1.0),
-    rlang (>= 1.0.0)
+    rlang (>= 1.0.0),
+    knitr,
+    rmarkdown
 Imports:
     ape (>= 5.0.0),
     phyclust (>= 0.1),
@@ -36,3 +38,4 @@ Imports:
 RoxygenNote: 7.2.1
 Depends:
     R (>= 3.5.0)
+VignetteBuilder: knitr
