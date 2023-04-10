@@ -6,10 +6,10 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-A modern and modular simulator for phylogenetics and phylodynamics.
+A modern and modular simulator for infectious disease phylogenetics and phylodynamics.
 SEEPS provides advanced simulation capabilities for population dynamics,
-population sampling techniques (random, contact-tracing), geneology and
-phylogeny simulation, and can construct both evolved sequences (using a
+population sampling techniques (random, contact-tracing), genealogy and
+phylogeny simulation, and can simulate both evolved sequences (using a
 provided reference) and pairwise distance matrices.
 
 <!-- One short paragraph about simulation -->
@@ -77,13 +77,13 @@ simulate_classic_HIV <- function(params) {
         spike_root = FALSE)
 
     # Convert time signals to # of mutations using a rate
-    geneology <- stochastify_transmission_history(
-        transmission_history = transmission_history$geneology,
+    genealogy <- stochastify_transmission_history(
+        transmission_history = transmission_history$genealogy,
         rate=params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
 
-    # convert the geneology into a distance matrix
-    distance_matrix <- geneology_to_distance_matrix(
-        geneology = geneology$geneology,
+    # convert the genealogy into a distance matrix
+    distance_matrix <- genealogy_to_distance_matrix(
+        genealogy = genealogy$genealogy,
         spike_root = FALSE)
 
     # Now return the result. Additional metadata used above can be collected

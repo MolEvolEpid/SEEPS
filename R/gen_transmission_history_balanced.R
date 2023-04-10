@@ -88,9 +88,11 @@ gen_transmission_history_balanced_tree <- function(population_size, #nolint: obj
         extra_parents <- parent_vector[(length(offspring_vector) + 1):length(parent_vector)]
         active <- c(active, extra_parents)  # Not worth optimizing this concatenate out
     }
+
     returned_data <- list("parents" = parents, "active" = active,
                           "t_end" = current_depth, "total_offspring" = 0)
     return(returned_data)
+
 }
 
 # Should have
