@@ -1,3 +1,15 @@
+#'Generate a transmission history for a given number of individuals under a optimally balanced tree
+#'
+#' Simulate a balanced transmission tree with a given number of individuals. If the `population_size` is a power of 2,
+#' then the tree will be unique up to relabeling the tips. If the `population_size` is not a power of 2, then the tree
+#' that minimizes Sackin's index is not unique. To constrain the solution, we build the tree programmatically. We
+#' convert each leaf node to a cherry in the initial layer, to create a new layer of leaves. We repeat until we have
+#' a `population_size` number of leaves. As a result, we will always find the shortest tree with the prescribed number
+#' of leaves that is perfectly balanced.
+#'
+#' @param n number of individuals to have in the final layer
+#'
+#' @export
 gen_transmission_history_balanced_tree <- function(population_size, #nolint: object_length_linter
                               spike_root = FALSE) {
     # Simulate a balanced tree wih `population_size` leaves.
@@ -21,16 +33,16 @@ gen_transmission_history_balanced_tree <- function(population_size, #nolint: obj
     birth_step <- c(1)
     # calculate the depth of a binary tree needed for population_size leaves
     # We're going to do a 2-index approch.
-    parent_vector <- c(1)
-    offspring_vector <- c(2,3)
+    parent_vector <- c(0)
+    offspring_vector <- c(2)
     pointer <- 2
-    current_depth <- 1
+    current_depth <- 2
     flag <- TRUE
     while (flag) {
         # Shuffle the pointers for the index vectors
         parent_vector <- offspring_vector
         # Build out a new offspring vector
-        offspring_vector <- (2 ** current_depth):((2 ** (current_depth + 1)) - 1)
+        offspring_vector <- (2 ** (current_depth-1)+1):((2 ** (current_depth)))
         # Enforce the cap
         vector_length <- length(offspring_vector)
         if (vector_length >= population_size) {  # We have extra population
@@ -76,7 +88,11 @@ gen_transmission_history_balanced_tree <- function(population_size, #nolint: obj
         extra_parents <- parent_vector[(length(offspring_vector) + 1):length(parent_vector)]
         active <- c(active, extra_parents)  # Not worth optimizing this concatenate out
     }
-    return(parents)
+
+    returned_data <- list("parents" = parents, "active" = active,
+                          "t_end" = current_depth, "total_offspring" = 0)
+    return(returned_data)
+
 }
 
 # Should have

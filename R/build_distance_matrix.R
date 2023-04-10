@@ -73,13 +73,19 @@ geneology_to_distance_matrix_classic <- function(geneology, spike_root = FALSE) 
 #' Reduce a geneology to a pairwise distance matrix.
 #'
 #' @export
-geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {  # nolint: object_length_linter
+geneology_to_distance_matrix <- function(geneology, mode="mu", spike_root = FALSE) {  # nolint: object_length_linter
   # Convert a geneology to a pairwise difference matrix
   # spike_root option adds a row and column for a node at the root
   if (spike_root) stop("This option is not yet implemented. See classic version.")
+
+  # Determine which we are going to get our distances from
+  key <- -1  # for switch
+  if (mode == "mu") key <- 5
+  if (mode == "mean") key <- 4
+  if (key == -1) stop("mode must be 'mu' or 'mean'")
+
   # number of leaf nodes
   M <- sum(geneology[, 6])  # nolint: object_name_linter
-
   inds <- which(geneology[, 6] != 0) # Get the index of the nonzeros
   index_names <- geneology[inds, 7] # Get the names of the nonzeros
   # Todo: Optimize this.
@@ -127,17 +133,17 @@ geneology_to_distance_matrix <- function(geneology, spike_root = FALSE) {  # nol
 
       # Trace the first arm back to the MRCA
       holder <- ind_par_mat[k_abs, 2]
-      sumhold <- ind_par_mat[k_abs, 5]
+      sumhold <- ind_par_mat[k_abs, key]
       while (holder != finally) {
-        sumhold <- sumhold + ind_par_mat[holder, 5]
+        sumhold <- sumhold + ind_par_mat[holder, key]
         holder <- ind_par_mat[holder, 2]
       }
 
       # Trace the other arm back to the MRCA
       holder <- ind_par_mat[l_abs, 2]
-      sumhold <- sumhold + ind_par_mat[l_abs, 5]
+      sumhold <- sumhold + ind_par_mat[l_abs, key]
       while (holder != finally) {
-        sumhold <- sumhold + ind_par_mat[holder, 5]
+        sumhold <- sumhold + ind_par_mat[holder, key]
         holder <- ind_par_mat[holder, 2]
 
       }
