@@ -57,8 +57,8 @@ test_that("contact_tracing: contact_traced_uniform_restarts_ids() works", {
     expect_equal(sort(result[["samples"]]), c(1, 2, 3, 4, 5))
     # Expect we explored everything
     expect_equal(sort(result[["found"]]), c(1, 2, 3, 4, 5))
-    print(result)
-
+    # Check group IDs
+    expect_equal(result[["group_ids"]], c(1, 1, 2, 3, 4))
 })
 
 test_that("contact_tracing: test data retrieval", {
@@ -105,6 +105,7 @@ test_that("Contact tracing on simulation run with restarts works", {
                                                   p = 1,
                                                   minimum_sample_size = 5)
     # Check for success
+    expect_equal(result[["group_ids"]], c(1,1,1,1,1))
     expect_equal(result[["success"]], TRUE)
     # Check we found five individuals
     expect_equal(length(result[["samples"]]), 5)

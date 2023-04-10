@@ -37,5 +37,5 @@ geneology_to_phylogeny_bpb <- function(transmission_history,
 
     return(list("names_newick" = tree_and_tips[["names_newick"]],
                 "phylogeny" = tree_and_tips[["phylogeny"]],
-                "newick_string" = tree_and_tips[["names_newick"]], "tree" = tree))
+                "newick_string" = tree_and_tips[["tree_newick"]], "tree" = tree))
 }
