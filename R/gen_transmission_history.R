@@ -139,12 +139,17 @@ initialize <- function(parameters) {
 
 #' Simulate an exponential growth.
 #' @export
-gen_exp_phase <- function(state, parameters) {
+gen_exp_phase <- function(state, parameters, all_states = FALSE) {
     # Perform exponential growth until the population reaches the target size.
     # Then return the new state of the simulation.
-
+    if(all_states) {
+        state_list <- list()
+    }
     while(TRUE) {
         state <- step(state, parameters)
+        if(all_states) {
+            state_list[[length(state_list) + 1]] <- state
+        }
         # Check if we can stop
         if (state$length_active > 0.9 * parameters$maximum_population_target
             && state$length_active > parameters$minimum_population) {
@@ -155,17 +160,25 @@ gen_exp_phase <- function(state, parameters) {
             break
         }
     }
-    return(state)
+    if (all_states) {
+        return(state_list)
+    } else {
+        return(state)
+    }
 }
+
 #' Simulate a fixed number of steps
 #'
 #' Usually, we want to simulate a fixed number of steps after the exponential growth phase.
 #' This function performs that step.
 #'
 #' @export
-gen_const_phase <- function(state, parameters, num_steps, verbose = FALSE) {
+gen_const_phase <- function(state, parameters, num_steps, verbose = FALSE, all_states = FALSE) {
     # Perform constant population growth until the simulation is complete.
     # Specify the number of steps to perform.
+    if (all_states) {
+        state_list <- list()
+    }
     if (num_steps > 0) {
         # Do the steps
         for (i in 1:num_steps) {
@@ -174,10 +187,16 @@ gen_const_phase <- function(state, parameters, num_steps, verbose = FALSE) {
             }
 
             state <- step(state, parameters)
+            if (all_states) {
+                state_list[[length(state_list) + 1]] <- state
+            }
         }
     }
-
-    return(state)
+    if (all_states) {
+        return(state_list)
+    } else {
+        return(state)
+    }
 }
 
 #' Clean up the simulation state and return the relevant data.
