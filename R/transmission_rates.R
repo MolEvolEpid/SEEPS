@@ -48,16 +48,23 @@ get_biphasic_HIV_rate <- function(params) {
 #'
 # nolint: object_name_linter
 get_biphasic_HIV_rate_function <- function(front_density_factor, front_cutoff,
-                                           target_length) {
+                                           target_length, params) {
+
+
+    # Parameterize the distribution
     total_density <- target_length + (front_density_factor - 1) * front_cutoff
-    front_density <- (front_density_factor * front_cutoff) / total_density
-    transition_time <- 3  # how many months at initial rate before transitioning to new rate
+    front_mass <- (front_density_factor * front_cutoff)  #  / total_density
+    # Density for each time step 
+    fdf <- ((front_mass / front_cutoff) * params[["R0"]]) / total_density
+    tdf <- (params[["R0"]] / total_density)
+
     # This function must conform to the API requirements
-    rate_fn <- function(current_step, birth_step, params = list()) {
-        rates <- (current_step - birth_step) > transition_time * front_density / front_cutoff
-          +((current_step - birth_step) >= 3) / total_density
+    rate_fn <- function(current_step, birth_step, ...) {
+        rates <- ((current_step - birth_step) < front_cutoff) * fdf
+        rates <- rates + ((current_step - birth_step) >= front_cutoff) * tdf
         return(rates)
     }
+
     return(rate_fn)
 }
 # Here's the general k-phase constructor
