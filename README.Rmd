@@ -17,16 +17,26 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-A modern and modular simulator for phylogenetics and phylodynamics. SEEPS provides advanced simulation capabilities for population dynamics, population sampling techniques (random, contact-tracing), geneology and phylogeny simulation, and can construct both evolved sequences (using a provided reference) and pairwise distance matrices.
+A modern and modular simulator for phylogenetics and phylodynamics written in pure R, SEEPS provides advanced simulation capabilities for population dynamics, sampling techniques, genealogy and phylogeny extraction, can generate trees, sequences, or pairwise distance matrices.
 
-<!-- One short paragraph about simulation -->
+Check out the [tutorial](https://mol-evo-epid.github.io/SEEPS/articles/SEEPS.html) for more details.
+
+If you use SEEPS in your research, please cite the following paper:
+
+> Kupperman, Ke, Leitner, _Paper title_ (2023) Journal. DOI: [10.0000/000000000000]
 
 ## Installation
 
-You can install the released version of SEEPS from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of SEEPS from [R-universe](https://r-universe.dev/) with:
+
 
 ``` r
-install.packages("SEEPS")
+install.packages("SEEPS", repos = "https://r-universe.dev")
+```
+
+Or install the development version from [GitHub](https://github.com/MolEvolEpid) with:
+``` r
+devtools::install_github("MolEvolEpid/SEEPS")
 ```
 
 ## Example
@@ -37,7 +47,7 @@ Obtain pairwise distance matrices with as little as 3 lines of code:
 install.packages("SEEPS")
 parameters <- list("rate_function_parameters" = list("R0" = 5),
     "minimum_population" = 15, "maximum_population_target" = 1000,
-    "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.006 * 300)
+    "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.0067 * 300)
 simultion_results <- SEEPS::simulate_classic_HIV(parameters)
 ```
 

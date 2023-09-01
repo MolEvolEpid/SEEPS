@@ -1,5 +1,5 @@
 Package: SEEPS
-Title: An Agent-Based Simulator for Infectious Disease Phylodynamics
+Title: Sequence evolution and epidemiological process simulator
 Version: 0.0.2
 Authors@R:
     c(person(given = "Michael",

@@ -4,3 +4,9 @@
 developer_ReadMe.md
 /scratch
 /bin
+SEEPS.Rproj
+inst/doc
+docs
+*.Rd
+/.VSCodeCounter
+/.vscode
