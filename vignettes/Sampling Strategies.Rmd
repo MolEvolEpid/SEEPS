@@ -1,0 +1,245 @@
+---
+title: "Sampling Strategies"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Sampling Strategies}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SEEPS)
+```
+
+SEEPS provides a variety of different building blocks for developing complex sampling strategies. As SEEPS was developed for studying contact tracing, our methods can be understood through the lens of contact tracing.
+
+First, let's generate some data.
+
+```{r}
+params <- list("rate_function_parameters" = list("R0" = 2.5),
+               "minimum_population" = 10, "maximum_population_target" = 104,
+               "total_steps_after_exp_phase" = 48, "mutation_rate" = 0.0067,
+               "a" = 5, "b" = 5)
+
+biphasic_rate_function <- get_biphasic_HIV_rate(
+        params = params[["rate_function_parameters"]])
+
+simulator_result <- gen_transmission_history_exponential_constant(
+        minimum_population = params[["minimum_population"]],
+        offspring_rate_fn = biphasic_rate_function,
+        total_steps = params[["total_steps_after_exp_phase"]],
+        maximum_population_target = params[["maximum_population_target"]],
+        spike_root = FALSE)
+```
+
+## Independent random sampling
+
+A first, fundamental sampling strategy is independent random sapling. In this strategy, each individual is sampled from the population with probability $n/N$, where $n$ is the number of samples and $N$ is the size of the active population. This strategy is implemented in the function `random_fixed_size_ids()`.
+
+```{r}
+set.seed(1947)
+samples_ruif <- random_fixed_size_ids(  # Random sampling
+        active = simulator_result[["active"]],
+        minimum_size = params[["minimum_population"]],
+        spike_root = FALSE)
+print(samples_ruif)
+```
+
+We can check that the sampling strategy is generating uniformly random samples by performing the sampling many times, and checking how often each sample is obtained.
+
+```{r}
+set.seed(1947)
+samples_taken <- c()
+active <- simulator_result[["active"]]
+for (i in 1:4000) {
+  samples_ruif <- random_fixed_size_ids(  # Random sampling
+        active = active,
+        minimum_size = 10)
+
+  samples_taken <- c(samples_taken, samples_ruif[["samples"]])
+}
+
+print(length(active))
+minx <- min(active)
+maxx <- max(active)
+histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot=FALSE)
+histogram$counts <- histogram$counts / 4000  # Normalize
+plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim=c(0, 0.12))
+axis(side=2, yaxp=c(0.06, 0.12, 3))
+abline(h=10/length(active), col="red")
+```
+
+### Proportional sampling
+
+Often, a model assumes that $X\%$ of the population is sampled, rather than $Y$ individuals. This can be easily implemented, by sampling `as.integer(length(active) * desired_proportion)` individuals.
+
+## Exhaust a single cluster
+
+Another simple strategy is to perform contact tracing starting from an initial (randomly selected) index case, and then perform iterative contact tracing until no new unexplored individuals are discovered.
+
+```{r}
+samples <- SEEPS::contact_traced_uniform_ids(
+        parents = simulator_result[["parents"]],
+        active = simulator_result[["active"]],
+        minimum_sample_size = 1, p=0.5)
+print(samples)
+```
+
+This strategy is more complex, as we have a variable size of the cluster, and  this is impacted by the toplogy. Let us first example the topology:
+
+```{r}
+contact_genealogy <- SEEPS::reduce_transmission_history(
+        samples = simulator_result[["active"]],
+        parents = simulator_result[["parents"]],
+        current_step = simulator_result[["t_end"]],
+        spike_root = FALSE)
+tree <- SEEPS::phylogeny_to_newick(contact_genealogy$geneology)
+tree <- ape::read.tree(text = tree)
+tree$tip.label <- lapply(tree$tip.label, function(x) {""})
+plot(ape::ladderize(tree))
+axis(1, col="black", col.ticks="black", col.axis="black", las=1)
+```
+
+Let's repeat the same experiment as before, but with the new sampling strategy.
+
+### High contact tracing
+
+Here, we take contact tracing to be very effective, and we assume that each linked infection is discovered (independently) with probability $p=0.98$.
+
+```{r}
+set.seed(1947)
+samples_taken <- c()
+sample_sizes <- c()
+active <- simulator_result[["active"]]
+k <- 10000
+for (i in 1:k) {
+  samples <- SEEPS::contact_traced_uniform_ids(
+        parents = simulator_result[["parents"]],
+        active = active,
+        minimum_sample_size = 1, p=0.98)  # Good contact tracing
+
+  samples_taken <- c(samples_taken, samples[["samples"]])
+  sample_sizes <- c(sample_sizes, length(samples[["samples"]]))
+}
+```
+
+```{r}
+
+minx <- min(active)
+maxx <- max(active)
+histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot=FALSE)
+
+histogram$counts <- histogram$counts / k  # Normalize
+
+plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim=c(0, 0.06))
+axis(side=2, yaxp=c(0.01, 0.06, 5))
+abline(h=1/length(active), col="red")
+abline(h=2/length(active), col="red")
+abline(h=3/length(active), col="red")
+abline(h=4/length(active), col="red")
+abline(h=5/length(active), col="red")
+```
+
+We see that there are discrete groups of individuals that are sampled with different probabilities. We can make this more clear with an additional histogram. The sampling is not uniform, as we see five different classes of individuals, with different probabilities of being sampled. This is due to the topology of the contact network.
+
+```{r}
+counts <- histogram$counts[- which(histogram$counts == 0)]
+hist(counts, main = "Histogram of probabilities", xlab = "Probability", ylab = "Number of nodes(infections)", breaks=100)
+abline(v=1/length(active), col="red")
+abline(v=2/length(active), col="red")
+abline(v=3/length(active), col="red")
+abline(v=4/length(active), col="red")
+abline(v=5/length(active), col="red")
+```
+
+```{r}
+barplot(table(sample_sizes)/k, main = "Histogram of sample sizes", xlab = "Size of group", ylab = "Frequency")
+```
+
+
+Importantly, note that this is not a geometric distribution. Only active samples that are discovered, are returned within the sample, while the contact tracing algorithm may trace through _inactive_ individuals.
+
+We can influence both of these by changing the contact tracing discovery probability parameter `p` from 0.98 above, to a lower value.
+
+### Low contact tracing
+
+Here, we take contact tracing to be not very effective, and we assume that each linked infection is discovered (independently) with probability $p=0.5$. We'll use the same contact network as before.
+
+```{r}
+set.seed(1947)
+samples_taken <- c()
+sample_sizes <- c()
+active <- simulator_result[["active"]]
+k <- 10000
+for (i in 1:k) {
+  samples <- SEEPS::contact_traced_uniform_ids(
+        parents = simulator_result[["parents"]],
+        active = active,
+        minimum_sample_size = 1, p=0.50)  # Good contact tracing
+
+  samples_taken <- c(samples_taken, samples[["samples"]])
+  sample_sizes <- c(sample_sizes, length(samples[["samples"]]))
+}
+```
+
+```{r}
+minx <- min(active)
+maxx <- max(active)
+histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot=FALSE)
+
+histogram$counts <- histogram$counts / k  # Normalize
+
+plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim=c(0, 0.05))
+axis(side=2, yaxp=c(0.01, 0.05, 4))
+abline(h=1/length(active), col="red")
+abline(h=2/length(active), col="red")
+abline(h=3/length(active), col="red")
+abline(h=4/length(active), col="red")
+```
+
+When contact tracing is reduced, the observed variance of the sampling distribution increases (for the same number of attempts).
+
+```{r}
+counts <- histogram$counts[- which(histogram$counts == 0)]
+hist(counts, main = "Histogram of probabilities", xlab = "Probability", ylab = "Number of nodes(infections)", breaks=100)
+```
+
+We can also observe the distribution of number of samples taken in each attempt at contact tracing.
+
+```{r}
+barplot(table(sample_sizes)/k, main = "Histogram of sample sizes", xlab = "Size of group", ylab = "Frequency")
+```
+
+The sampling is not uniform, as we see five different classes of individuals, with different probabilities of being sampled. This is due to the topology of the contact network.
+
+Importantly, note that this is not a geometric distribution. Only active samples that are discovered, are returned within the sample, while the contact tracing algorithm may trace through _inactive_ individuals.
+
+## Multiple clusters
+
+While this initial scheme is interesting mathematically, it is not very useful in practice when considering most public health applications or data sets. Instead, iterative contact tracing is performed on multiple seeds, until a prescribed number of samples are obtained.
+SEEPS offers the `contact_traced_uniform_restarts_ids` function to perform this. As the number of total clusters needed can now vary, a group index is assigned to each individual that corresponds to the round of contact tracing performed to discover them.
+
+Before presenting any code, we pause here to provide two notes of caution.
+
+1. The algorithm does not guarantee that each discovered individual is traced at most once: if contact tracing is restarted with a new seed, it is possible that the same individual (both active and inactive) are discovered again, but will not be included in the new sample group.
+2. The groups discovered by the algorithm may be closely related, two distinctly labeled clusters may not be practically distinct. This is not a limitation of the algorithm, but an inherent property of the underlying process.
+
+```{r}
+set.seed(1947)
+samples <- SEEPS::contact_traced_uniform_restarts_ids(
+        parents = simulator_result[["parents"]],
+        active = simulator_result[["active"]],
+        minimum_sample_size = 10, p=0.5)
+print(samples)
+```
+
+* Previously, the `status` attribute reported exhaustion of data. Here, the algorithm terminated because we had found a sufficient number of samples after 6 attempts.
+* The `group_ids` attribute corresponds to the `samples` attribute, and reports the group index for each individual.
+* The `found` attribute reports all individuals traced by the algorithm. This includes all inactive individuals traced, and any additional active individuals that were discovered, but would have exceeded the requested number of samples.

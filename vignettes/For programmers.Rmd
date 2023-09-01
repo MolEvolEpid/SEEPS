@@ -1,0 +1,84 @@
+---
+title: "For programmers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{For programmers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(SEEPS)
+```
+
+Here we discuss several three primary data structures in SEEPS.
+
+1. Simulator outputs
+3. Phylogeny/Genealogy tree. 
+
+## Simulator outputs.
+
+Simulators in SEEPS outputs a list with the following fields.
+
+a. `parents` - A `K` by `2` matrix, where each row denotes an infection/birth event. The first column is the index of the parent, the second column is the time of the birth/infection event. This vector is pre-allocated to avoid repeated array resizing. Values after the last nonzero row should be disregarded in any downstream analysis.
+b. `active` - A vector of `M < K` indicies corresponding to active infections. These indices correspond to individuals that have not been removed from the population. 
+c. `t_end` - The time index at the end of the simulation. A non-negative integer.
+d. `total_offspring` - The number of newly generated offspring added in the most previous update step. 
+
+## Internal representations of trees
+
+Phylogenies and genealogies are represented in an array. SEEPS representations are based on enumerating the parent of each node. Here, we detail the interpretation of each column. A tree looks like this example, from the getting started documentation. 
+
+```r
+##       [,1] [,2]       [,3]       [,4]         [,5] [,6] [,7]
+##  [1,]    1   32  1.0010000  0.3734455 0.0018690916    0    0
+##  [2,]    2   32  2.0010000  1.3734455 0.0068740830    0    0
+##  [3,]    3   31  3.0010000  1.9947840 0.0099838767    0    0
+##  [4,]    4   30  5.0010000  3.4439264 0.0172368222    0    0
+##  [5,]    5   29 23.0010000 16.6349876 0.0832579696    0    0
+##  [6,]    6   27 27.0010000  1.7993404 0.0090056832    0    0
+##  [7,]    7   28 30.0010000  5.4709745 0.0273821801    0    0
+##  [8,]    8   25 31.0010000  0.9999708 0.0050048454    0    0
+##  [9,]    9   24 33.0010000  1.6482525 0.0082494895    0    0
+## [10,]   10   26 55.0000000 27.2799548 0.1365359389    1   82
+## [11,]   11   22 37.0010000  2.4823942 0.0124243614    0    0
+## [12,]   12   19 38.0010000  1.6213194 0.0081146896    0    0
+## [13,]   13   22 55.0000000 20.4813942 0.1025092015    1   91
+## [14,]   14   18 55.0000000 16.1211358 0.0806861461    1   92
+## [15,]   15   21 55.0000000 19.8310839 0.0992544039    1   94
+## [16,]   16   19 55.0000000 18.6203194 0.0931945382    1   97
+## [17,]   17   18 55.0000000 16.1211358 0.0806861461    1  104
+## [18,]   18   20 38.8788642  3.4479771 0.0172570959    0    0
+## [19,]   19   20 36.3796806  0.9487936 0.0047487037    0    0
+## [20,]   20   21 35.4308870  0.2619709 0.0013111620    0    0
+## [21,]   21   23 35.1689161  3.6777947 0.0184073309    0    0
+## [22,]   22   23 34.5186058  3.0274844 0.0151525334    0    0
+## [23,]   23   24 31.4911214  0.1383739 0.0006925602    0    0
+## [24,]   24   25 31.3527475  1.3517183 0.0067653387    0    0
+## [25,]   25   26 30.0010292  2.2809840 0.0114163051    0    0
+## [26,]   26   27 27.7200452  2.5183856 0.0126044982    0    0
+## [27,]   27   28 25.2016596  0.6716341 0.0033615227    0    0
+## [28,]   28   29 24.5300255 18.1640131 0.0909107293    0    0
+## [29,]   29   30  6.3660124  4.8089389 0.0240686975    0    0
+## [30,]   30   31  1.5570736  0.5508576 0.0027570373    0    0
+## [31,]   31   33  1.0062160  1.0162071 0.0050861079    0    0
+## [32,]   32   33  0.6275545  0.6375456 0.0031909103    0    0
+## [33,]   33    0  0.0000000  0.0000000 0.0000000000    0    0
+## [34,]    0    0  0.0000000  0.0000000 0.0000000000    0    0
+```
+
+* `Column 1` stores the index of the node. Index 0 is the root node. 1:N specify the tips that were used for reconstruction, the remaining nodes are internal nodes.
+* `Column 2` denotes the parental node. Node 0 is the root node. Arriving at node 0 implies that you have reached the root of the tree.
+* `Column 3` stores the time (relative to the zero) of the node. This can also be thought of as the "height" of the node.
+* `Column 4` stores the edge distance between the node and it's parent. Notice that the last (highest indexed) node is zero distance from the root `0`. 
+* `Column 5` stores a realized distance. The interpretation of this vlaue is context dependent. Here we used `geneology_to_phylogeny_bpb` so the distance units are in expected substitutions/site. If we use `stochastify_transmission_history`, this column would be integer valued. 
+* `Column 6` stores a boolean (0 or 1) denoting if the node is sampled. Some leaves may included in the tree that do not represent samples to ensure that the within host due to the transmission history is properly accounted for. 
+* `Column 7` stores the leaf index for each sample. Column 7 has the same sparsity pattern as column 6. 
+
