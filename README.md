@@ -16,12 +16,8 @@ provided reference) and pairwise distance matrices.
 
 ## Installation
 
-You can install the released version of SEEPS from
-[CRAN](https://CRAN.R-project.org) with:
-
-``` r
-install.packages("SEEPS")
-```
+SEEPS is currently available from github, using devtools. 
+Stable public releases will be made soon through R-universe.
 
 ## Example
 
