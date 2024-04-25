@@ -20,7 +20,7 @@
 #'            This should be specified even if the founding infection is sampled,
 #'           as the root of the outbreak will have evolved since the founding event.
 #'
-#' @seealso reduce_transmission_history_bpb
+#' @seealso reduce_transmission_history() for within-host diversity
 #' @return A list with 1 element: "geneology" a matrix of transmission history
 #'   that encodes an evolutionary tree.
 #' @export
@@ -33,7 +33,11 @@ reduce_transmission_history_mt <- function(samples, parents,
         sapply(
             1:length(samples),
             function(i) {
-                rep(current_step[[i]], length(samples[[i]]))
+                if (length(samples[[i]]) == 0) {
+                    return(invisible(NULL))
+                } else {
+                    rep(current_step[[i]], length(samples[[i]]))
+                }
             }
         )
     )
