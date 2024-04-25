@@ -189,9 +189,6 @@ removed_list[[ptr]] <- c()
 sample_times[[ptr]] <- c()
 birth_list[[ptr]] <- c(1)
 ptr <- 2
-```
-
-```{r}
 
 for (i in 2:length(simulator_result)) {
     # Get the active nodes at i-1 and i
@@ -229,44 +226,39 @@ print(sample_times)
 full_transmission_history <- reduce_transmission_history_mt(parents=simulator_result[[length(simulator_result)]]$parents,
     samples=removed_list,
     current_step=sample_times)
-# ```
-#
-# Now we can visualize the entire transmission history.
-#
-# ```{r, fig.height = 12}
-# string <- SEEPS::phylogeny_to_newick(full_transmission_history$geneology, mode="mean", label_mode="abs")
-# tree <- read.tree(text = string)
-#
-# plot(ladderize(tree))
-# axis(1, las = 1, col.axis = "black", col.ticks = "black")
-# ```
-#
-# We can also plot out the number of new infections per time step.
-#
-# ```{r}
-# births_ <- lapply(birth_list, length)
-# deaths <- lapply(removed_list, length)
-# # births_ <- births[1:length(births) - 1]  # Don't report the final step
-# deaths_ <- deaths[1:length(deaths) - 1]  # Don't report the final step
-# sample_times_ <- sample_times[1:length(sample_times) - 1]  # Don't report the final step
-# deaths_ <- unlist(deaths_)
-# births_ <- unlist(births_)
-# print(length(births_))
-# print(length(deaths_))
-# plot(seq_along(births_), births_, label = "Births")
-# lines(seq_along(deaths_), deaths_, col="red", label="Deaths")
-# legend(39,y=NULL, legend=c("Births", "Deaths"), col=c("black", "red"), lty=1:2, cex=0.8)
-# ```
-#
-# ```{r}
-# print(length(births_))
-# print(length(deaths_))
-# ```
-#
-# ```{r}
-# deltas <- births_ - deaths_
-# print(length(deltas))
-# plot(1:length(deltas), cumsum(deltas), ylab="Number of active infections", xlab="Time index [steps]", ylim=c(-1, maximum_population_target + 2))
-# # Draw a horizontal line at y=20 with a dashed line
+```
+
+Now we can visualize the entire transmission history.
+
+```{r, fig.height = 12}
+string <- SEEPS::phylogeny_to_newick(full_transmission_history$geneology, mode="mean", label_mode="abs")
+tree <- read.tree(text = string)
+plot(ladderize(tree))
+axis(1, las = 1, col.axis = "black", col.ticks = "black")
+```
+
+We can also plot out the number of new infections per time step.
+
+```{r}
+births_ <- lapply(birth_list, length)
+deaths <- lapply(removed_list, length)
+# births_ <- births[1:length(births) - 1]  # Don't report the final step
+deaths_ <- deaths[1:length(deaths) - 1]  # Don't report the final step
+sample_times_ <- sample_times[1:length(sample_times) - 1]  # Don't report the final step
+deaths_ <- unlist(deaths_)
+births_ <- unlist(births_)
+print(length(births_))
+print(length(deaths_))
+plot(seq_along(births_), births_, label = "Births")
+lines(seq_along(deaths_), deaths_, col="red", label="Deaths")
+legend(39,y=NULL, legend=c("Births", "Deaths"), col=c("black", "red"), lty=1:2, cex=0.8)
+
+print(length(births_))
+print(length(deaths_))
+
+deltas <- births_ - deaths_
+print(length(deltas))
+plot(1:length(deltas), cumsum(deltas), ylab="Number of active infections", xlab="Time index [steps]", ylim=c(-1, maximum_population_target + 2))
+# Draw a horizontal line at y=20 with a dashed line
 # abline(h = maximum_population_target, col = "red", lty = 2)
 ```
