@@ -1,58 +1,16 @@
----
-title: "Longitudinal sampling with SEEPS"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{Longitudinal sampling with SEEPS}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
----
-
-```{r, include = FALSE}
+## ---- include = FALSE---------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-```
 
-```{r setup}
+
+## ----setup--------------------------------------------------------------------
 library(SEEPS)
 set.seed(1945)
-```
 
-In this vingette, we address how to perform longitudinal sampling.
-In most applications, data is not taken from a single time point, but rather taken over investigations and multiple years.
 
-We'll look at how to implement each of these components in SEEPS.
-
-## Simulation
-
-The basic simulation function `gen_transmission_history_exponential_constant` generates a transmission history for a single population. However, the act of sampling a population removes a set of individuals from a population. Usually, we assume that sampling an individual would effectively remove them from the population (from the large-population view). To properly account for this, we need to use the more detailed API for designing and implementing the simulation.
-
-### The simulation API
-
-The lower level simulation API is concentrated on the `step` function. Users seeking to develop new simulation methods should concentrate on using this function.
-
-The `step` function takes in a state at integer time `t` with a list of parameters, and returns the state at time `t+1`. This setup is designed to be comfortable to users familiar with dynamical systems which often express $x(t_{n+1}) = f(x(t_n); \theta)$.
-
-The `wrap_parameters` function is provided to encapsulate simulation parameters into a named list. Given the list of parameters, the `initialize` method generates an initial state `x0` with introduced one active infection.
-
-SEEPS provides two additional functions to help with simulations that can perform multiple steps.
-* `gen_const_phase` performs a fixed number of steps and returns the final state.
-* `gen_exp_phase` performs steps until the the number of active cases is at least the `minimum_population` (a parameter)  and is at least 90% of the `maximum_population_target` (another parameter).
-
-### Removing individuals from the active population
-
-Observing the simulation to draw a sample generally removes the individual from the active population. SEEPS provides the `remove_samples` function to perform this operation. `remove_samples` accepts a state and a vector of sample indices to remove from the simulation. A new state is returned with the samples removed.
-
-```r
-state <- SEEPS::remove_samples(state, c(1, 2, 3))
-```
-
-## A simple example
-
-We'll start with a simple example. We'll simulate a small population with a a target maximum population size of 20 individuals and sample 5 individuals every 12 months, starting when the population is at least 18 individuals (90% of 20), with $R_0 = 3$.
-
-```{r}
+## -----------------------------------------------------------------------------
 states_sampled <- list()
 samples_all <- list()
 
@@ -125,18 +83,9 @@ library(ape)
 tree <- drop.tip(read.tree(text = newick_tree_string), "")
 plot(tree, cex = 0.5)
 axis(1, las=1, col.axis="black", col.ticks="black")
-```
 
 
-
-
-## Reporting the entire history of the simulation
-
-One can also use this approach to record when every individual is removed from the population. Rather than recording a set of samples, we record whenever an individual is removed from the active population.
-
-We define an auxiliary function for simulations.
-
-```{r}
+## -----------------------------------------------------------------------------
 gen_transmission_history_exponential_constant_local <- function(minimum_population, #nolint: object_length_linter
         offspring_rate_fn, maximum_population_target, total_steps,
                               spike_root = FALSE) {
@@ -157,17 +106,13 @@ gen_transmission_history_exponential_constant_local <- function(minimum_populati
     all_states <- c(all_states, state)
     return(lapply(all_states, SEEPS::clean_up))
 }
-```
 
-We'll use a different rate function, where the rate is 50 times higher in the first 3 months than in the remainder of the infection.
 
-```{r}
+## -----------------------------------------------------------------------------
 offspring_rate_fn <- get_biphasic_HIV_rate_function(50, 3, 24, params = list("R0" = 1.1))
-```
 
 
-
-```{r}
+## -----------------------------------------------------------------------------
 maximum_population_target <- 30
 simulator_result <- gen_transmission_history_exponential_constant_local(
         minimum_population = 6,
@@ -179,19 +124,17 @@ simulator_result <- gen_transmission_history_exponential_constant_local(
 removed_list <- list()
 sample_times <- list()
 birth_list <- list()
-```
 
-```{r}
+
+## -----------------------------------------------------------------------------
 ptr <- 1
-# Don't include the 0 individual as they are not part of the population
-# 0 is the root of the first infection.
 removed_list[[ptr]] <- c()
 sample_times[[ptr]] <- c()
 birth_list[[ptr]] <- c(1)
 ptr <- 2
-```
 
-```{r}
+
+## -----------------------------------------------------------------------------
 
 for (i in 2:length(simulator_result)) {
     # Get the active nodes at i-1 and i
@@ -220,12 +163,12 @@ active_final <- simulator_result[[length(simulator_result)]]$active
 removed_list[[ptr]] <- active_final
 # Record the sample time
 sample_times[[ptr]] <- simulator_result[[length(simulator_result)]]$t_end
-```
 
-```{r}
+
+## -----------------------------------------------------------------------------
 # Now record the transmission history
-print(removed_list)
-print(sample_times)
+# print(removed_list)
+# print(sample_times)
 full_transmission_history <- reduce_transmission_history_mt(parents=simulator_result[[length(simulator_result)]]$parents,
     samples=removed_list,
     current_step=sample_times)
@@ -269,4 +212,3 @@ full_transmission_history <- reduce_transmission_history_mt(parents=simulator_re
 # plot(1:length(deltas), cumsum(deltas), ylab="Number of active infections", xlab="Time index [steps]", ylim=c(-1, maximum_population_target + 2))
 # # Draw a horizontal line at y=20 with a dashed line
 # abline(h = maximum_population_target, col = "red", lty = 2)
-```
