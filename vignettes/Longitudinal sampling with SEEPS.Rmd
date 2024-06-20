@@ -249,8 +249,8 @@ deaths_ <- unlist(deaths_)
 births_ <- unlist(births_)
 print(length(births_))
 print(length(deaths_))
-plot(seq_along(births_), births_, label = "Births")
-lines(seq_along(deaths_), deaths_, col="red", label="Deaths")
+plot(seq_along(births_), births_, col="black", type="S")  # label="Births"
+lines(seq_along(deaths_), deaths_, col="red", type="S")  # label="Deaths"
 legend(39,y=NULL, legend=c("Births", "Deaths"), col=c("black", "red"), lty=1:2, cex=0.8)
 
 print(length(births_))
@@ -258,7 +258,7 @@ print(length(deaths_))
 
 deltas <- births_ - deaths_
 print(length(deltas))
-plot(1:length(deltas), cumsum(deltas), ylab="Number of active infections", xlab="Time index [steps]", ylim=c(-1, maximum_population_target + 2))
-# Draw a horizontal line at y=20 with a dashed line
-# abline(h = maximum_population_target, col = "red", lty = 2)
+plot(1:length(deltas), cumsum(deltas), ylab="Number of active infections", xlab="Time index [steps]", ylim=c(-1, maximum_population_target + 2), type="S")
+# Draw a horizontal line at the maximum population target
+abline(h = maximum_population_target, col = "red", lty = 2)
 ```
