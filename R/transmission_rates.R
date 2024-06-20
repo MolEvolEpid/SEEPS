@@ -37,6 +37,27 @@ get_biphasic_HIV_rate <- function(params) {
 
 #' Factory function to generate biphasic rate functions
 #'
+#' This function is a factory function that generates biphasic rate functions.
+#' It takes three parameters: `front_density_factor`, `front_cutoff`, and `target_length`.
+#' The `front_density_factor` determines the relative significance of the first phase
+#' of the rate function. The `front_cutoff` specifies the length of the first phase,
+#' and it should be an integer greater than or equal to 1. The `target_length` is the
+#' expected length of an infection, and it is used for normalization to ensure an average
+#' of R0 secondary infections.
+#'
+#' The function returns a callable rate function that can be used for further calculations.
+#'
+#' @param front_density_factor Numeric value indicating the relative significance of the
+#'   first phase of the rate function.
+#' @param front_cutoff Integer value specifying the length of the first phase.
+#' @param target_length Numeric value representing the expected length of an infection.
+#'
+#' @return A callable rate function.
+#' @export
+#'
+# nolint: object_name_linter
+#' Factory function to generate biphasic rate functions
+#'
 #' @param front_density_factor How much relative significance to place in the
 #'   first phase of the rate function.
 #' @param front_cutoff Length of first phase. An integer 1 or greater.
@@ -54,7 +75,7 @@ get_biphasic_HIV_rate_function <- function(front_density_factor, front_cutoff,
     # Parameterize the distribution
     total_density <- target_length + (front_density_factor - 1) * front_cutoff
     front_mass <- (front_density_factor * front_cutoff)  #  / total_density
-    # Density for each time step 
+    # Density for each time step
     fdf <- ((front_mass / front_cutoff) * params[["R0"]]) / total_density
     tdf <- (params[["R0"]] / total_density)
 
@@ -79,16 +100,23 @@ get_biphasic_HIV_rate_function <- function(front_density_factor, front_cutoff,
 #' @return Callable, rate function
 #' @export
 #'
-get_Kphasic_hiv_rate_function <- function(rate_list, target_length, params) {  # nolint: object_name_linter
+get_Kphasic_hiv_rate_function <- function(rate_list, params) {  # nolint: object_name_linter
     stage_density <- lapply(rate_list, function(vec) vec[[1]] * vec[[2]])
+    stage_density <- unlist(stage_density)
     total_density <- sum(stage_density)
     stage_cutoffs <- cumsum(lapply(rate_list, function(vec) vec[[2]]))
     rate_values <- stage_density / total_density
     # This function must conform to the API requirements
-    rate_fn <- function(current_step, birth_step, params = list()) {
+    rate_fn <- function(current_step, birth_step, ...) {
         age <- current_step - birth_step
+        # A mask is necessary to capture the last stage
+        # which are past the last stage. We assume these to be zero
+        # normalization requires this to be finite, 
+        # but could be very large.
+        outside_mask <- seq_along(age) < length(stage_cutoffs)
         bins <- findInterval(x = age, vec = stage_cutoffs)
-        rates <- rate_values[bins] * params[["R0"]]
+        rates <- rate_values[bins + 1] * params[["R0"]]
+        rates[outside_mask] <- 0
         return(rates)
     }
     return(rate_fn)
