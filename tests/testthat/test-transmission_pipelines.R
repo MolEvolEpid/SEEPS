@@ -53,8 +53,6 @@ test_that("Check bpb inputs", {
     sample <- c(7, 9, 10)
     res <- reduce_transmission_history_bpb(samples = sample,
             parents = simulator_result$parents, current_step = simulator_result$t_end)
-    print(simulator_result$parents[1:12, ])
-    print(res)
 
     expect_equal(res$parents, c(0, 1, 2, 1, 1, 3, 4, 5))
     expect_equal(res$transmission_times, c(0, 1, 2, 2, 3, 3, 4, 4))
