@@ -33,9 +33,7 @@ reduce_transmission_history_mt <- function(samples, parents,
         sapply(
             1:length(samples),
             function(i) {
-                if (length(samples[[i]]) == 0) {
-                    return(invisible(NULL))
-                } else {
+                if (length(samples[[i]]) > 0) {
                     rep(current_step[[i]], length(samples[[i]]))
                 }
             }
@@ -43,7 +41,10 @@ reduce_transmission_history_mt <- function(samples, parents,
     )
     samples <- samples_all  # Over-write the samples, now that we know when
     # they were sampled
-
+    print("Samples")
+    print(samples)
+    print("Sample times")
+    print(sample_times)
     observation_size <- length(samples)
     geneology <- matrix(0, 2 * observation_size, 7)
     # Columns:
