@@ -1,12 +1,13 @@
-# transmission_rate_selector_functions
-# Functions for deciding which transmission rate function to use for
-# each individual. These are listed in roughly increasing order of complexity.
-#
-# Basic pattern is these two lines:
-# rate <- selector(birth_times, current_time, rate_indexing, ...)
-# sample_new_indexing <- rate_assign_X_factory(rate_functions, ...)
-# rate_indexing <- sample_new_indexing(...)
-
+#' transmission_rate_selector_functions
+#' Functions for deciding which transmission rate function to use for
+#' each individual. These are listed in roughly increasing order of complexity.
+#'
+#' Basic pattern is these two lines:
+#' rate <- selector(birth_times, current_time, rate_indexing, ...)
+#' sample_new_indexing <- rate_assign_X_factory(rate_functions, ...)
+#' rate_indexing <- sample_new_indexing(...)
+#'
+#' @export
 rate_calculator <- function(birth_times, current_time, rate_indexing, rate_functions, ...) {
     rates <- rep(0, length(birth_times))
     for (i in seq_along(rate_functions)) {
@@ -21,7 +22,9 @@ rate_calculator <- function(birth_times, current_time, rate_indexing, rate_funct
 }
 # Factory pattern for assigning parental rate index to children
 
-# Assign the rate index of the parent to the child
+#' Assign the rate index of the parent to the child
+#'
+#' @export
 rate_assign_parental_factory <- function(rate_functions, ...) {
     rate_assign <- function(birth_times, current_time, rate_indexing, rate_functions, parents, ...) {
         # Assign the rate index of the parent to the child
@@ -30,7 +33,9 @@ rate_assign_parental_factory <- function(rate_functions, ...) {
     return(rate_assign)
 }
 
-# assign according to some distribution of rates
+#' assign according to some distribution of rates
+#'
+#' @export
 rate_assign_random_factory <- function(rate_functions, p, ...) {
     prob_vec <- p / sum(p)  # normalize
     n <- min(length(rate_functions), length(p))
@@ -42,8 +47,9 @@ rate_assign_random_factory <- function(rate_functions, p, ...) {
 }
 
 
-# Assign parents with X%, otherwise assign according to distribution p
-
+#' Assign parents with X%, otherwise assign according to distribution p
+#'
+#' @export
 rate_assign_random_with_inheritance_factory <- function(rate_functions, p, inheritance_rate, ...) {
     prob_vec <- p / sum(p)  # normalize
     n <- min(length(rate_functions), length(p))
