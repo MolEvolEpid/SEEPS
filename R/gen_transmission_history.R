@@ -85,7 +85,7 @@ gen_transmission_history_exponential_constant_classic <- function(minimum_popula
 #' @export
 gen_transmission_history_exponential_constant <- function(minimum_population, #nolint: object_length_linter
         offspring_rate_fn, maximum_population_target, total_steps,
-                              spike_root = FALSE) {
+                              spike_root = FALSE, ...) {
     # Top level/user function. Users should start with this function.
 
     parameters <- wrap_parameters(minimum_population, offspring_rate_fn,
@@ -103,18 +103,29 @@ gen_transmission_history_exponential_constant <- function(minimum_population, #n
 #' @noRd
 wrap_parameters <- function(minimum_population, offspring_rate_fn,
                             maximum_population_target, total_steps,
-                            spike_root = FALSE) {
+                            spike_root = FALSE, ...) {
     parameters <- list("minimum_population" = minimum_population,
                        "offspring_rate_fn" = offspring_rate_fn,
                        "maximum_population_target" = maximum_population_target,
                        "total_steps" = total_steps,
                        "spike_root" = spike_root)
+    # if we have a rate_selector_function, add it to the parameters
+    params <- list(...)
+
+    if (length(params) > 0) {
+        if ("rate_selector_function" %in% names(params)) {
+            parameters$rate_selector_function <- params$rate_selector_function
+        }
+    } else {
+        # Use a default that will only be used if the user does not provide one
+        parameters$rate_selector_function <- NULL
+    }
     return(parameters)
 }
 
 #' Utility function for initializing the simulation
 #' @export
-initialize <- function(parameters) {
+initialize <- function(parameters, ...) {
     # Initialize the simulation parameters (a "state" in SEEPS parlance).
     # This is called once at the beginning of the simulation.
 
@@ -131,15 +142,20 @@ initialize <- function(parameters) {
     # add length_active
     length_active <- length(active)
     # Pack it together and return it
-    return(list("parents" = parents, "active" = active,
+    state <- list("parents" = parents, "active" = active,
                 "active_index" = active_index, "end_step"= end_step,
                 "birth_step" = birth_step, "length_active" = length_active,
-                "curr_step" = curr_step, "total_offspring" = 1))
+                "curr_step" = curr_step, "total_offspring" = 1)
+    if (length(parameters$offspring_rate_fn) > 1) {
+        state$rate_indexing <- rep(0, nrow(state$parents))
+        state$rate_indexing[[1]] <- 1
+    }
+    return(state)
 }
 
 #' Simulate an exponential growth.
 #' @export
-gen_exp_phase <- function(state, parameters, all_states = FALSE) {
+gen_exp_phase <- function(state, parameters, all_states = FALSE, ...) {
     # Perform exponential growth until the population reaches the target size.
     # Then return the new state of the simulation.
     if(all_states) {
@@ -173,7 +189,7 @@ gen_exp_phase <- function(state, parameters, all_states = FALSE) {
 #' This function performs that step.
 #'
 #' @export
-gen_const_phase <- function(state, parameters, num_steps, verbose = FALSE, all_states = FALSE) {
+gen_const_phase <- function(state, parameters, num_steps, verbose = FALSE, all_states = FALSE, ...) {
     # Perform constant population growth until the simulation is complete.
     # Specify the number of steps to perform.
     if (all_states) {
@@ -202,7 +218,7 @@ gen_const_phase <- function(state, parameters, num_steps, verbose = FALSE, all_s
 #' Clean up the simulation state and return the relevant data.
 #'
 #' @export
-clean_up <- function(state) {
+clean_up <- function(state, ...) {
     # Extract the relevant data from the simulation and return it. We do not need
     # all of the internal state to be exposed to the user.
     # This is called once at the end of the simulation.
@@ -216,7 +232,7 @@ clean_up <- function(state) {
 #' Perform a single step of the simulation
 #'
 #' @export
-step <- function(state, parameters) {
+step <- function(state, parameters, ...) {
     # Perform a single step of the simulation. This is the core algorithm. It is used
     # by both the exponential and constant phases which provide hyperparameter inputs
     # This is called repeatedly until the simulation is complete. This represents a single step.
@@ -224,21 +240,44 @@ step <- function(state, parameters) {
     state$length_active <- length(state$active)  # pre-compute for efficiency
     if (parameters$maximum_population_target - state$length_active > 0) {  # If we can/need to grow
         # Sample offspring distribution
-        offsprings <- parameters$offspring_rate_fn(current_step = state$curr_step, birth_step = state$birth_step)
+        if (is.null(parameters$rate_selector_function)) {
+            offsprings <- parameters$offspring_rate_fn(current_step = state$curr_step, birth_step = state$birth_step)
+        } else {
+            if (is.null(state$rate_indexing)) {
+                state$rate_indexing <- rep(1, (state$parents))
+            }
+            # Use the rate selector function
+            offsprings <- rate_calculator(
+                birth_times = state$birth_step,
+                current_time = state$curr_step,
+                rate_indexing = state$rate_indexing[state$active],
+                rate_functions = parameters$offspring_rate_fn)
+
+        }
         # Cap offspring at the target
         state$tot_offsprings <- ceiling(min(parameters$maximum_population_target - state$length_active,
                                             sum(offsprings)))
         # Assign parents using the sampled rates/weights
         prts <- sample(1:state$length_active, state$tot_offsprings, replace = TRUE, prob = offsprings)
+        # Update the offspring rate indexing now that parents are assigned
+        if (!is.null(parameters$rate_selector_function)) {
+            new_indexes <- parameters$rate_selector_function(state$birth_step,
+                current_time = state$curr_step, rate_indexing = state$rate_indexing[state$active],
+                 rate_functions = parameters$offspring_rate_fn, parents = prts)
+        }
         # Record parents
         if ((state$active_index + state$tot_offsprings - 1) > dim(state$parents)[1]) {
             # Double the table size. This should not need to occur, but will break the simulation
             # if we overflow the table. Default values are chosen with HIV dynamics in mind.
             state$parents <- rbind(state$parents,
                                    matrix(0, max(parameters$total_steps, 12) * parameters$maximum_population_target, 2))
+            state$rate_indexing <- c(state$rate_indexing, rep(0, state$tot_offsprings))
         }
         state$parents[state$active_index:(state$active_index + state$tot_offsprings - 1), 1] <- state$active[prts]
         state$parents[state$active_index:(state$active_index + state$tot_offsprings - 1), 2] <- state$curr_step
+        if (!is.null(parameters$rate_selector_function)) {
+            state$rate_indexing[state$active_index:(state$active_index + state$tot_offsprings - 1)] <- new_indexes
+        }
 
         # Update state vectors needed for stepping the model
         state$active <- c(state$active, state$active_index:(state$active_index + state$tot_offsprings - 1))
