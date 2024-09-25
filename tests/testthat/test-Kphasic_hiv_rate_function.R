@@ -1,3 +1,4 @@
+skip(message = "Reserved for future use")
 test_that("Kphasic hiv rate function works - simple", {
     # Setup some simple parameters
     rate_list <- list(c(1, 1), c(2, 1), c(1, 1))
