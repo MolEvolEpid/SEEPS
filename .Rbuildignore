@@ -1,3 +1,11 @@
-^bluefern\.Rproj$
+^SEEPS\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
+^\.gitignore$
+^raw-data$
+^.lintr$
+^\data-raw$

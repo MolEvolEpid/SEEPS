@@ -1,11 +1,13 @@
 test_that("simulate_modern_HIV() pipeline", {
-# Test example of simulator with bpb
+    # Test example of simulator with bpb
     set.seed(1947)
     sample_size <- 15
-    params <- list("rate_function_parameters" = list("R0" = 5),
-                   "minimum_population" = sample_size, "maximum_population_target" = sample_size * 10,
-                   "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.009 * 300,
-                   "a" = 5, "b" = 5)
+    params <- list(
+        "rate_function_parameters" = list("R0" = 5),
+        "minimum_population" = sample_size, "maximum_population_target" = sample_size * 10,
+        "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.009 * 300,
+        "a" = 5, "b" = 5
+    )
     output <- simulate_modern_HIV(params = params)
     # Don't need to consider row names yet
     rownames(output$matrix) <- NULL

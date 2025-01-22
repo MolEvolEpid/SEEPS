@@ -5,29 +5,38 @@
 #' This function assumes that all coalescent events occur at or after the initial infection,
 #' that there is a single introduction and ancestral sequence.
 #'
+#' Uses a linear model for within-host diversity, parameterized by `a` and `b` (ax+b model).
 #'
 #' @param transmission_history A transmission history matrix
-#' @param infection_times A vector of infection times
+#' @param infection_times A vector of infection times.
+#' @param sample_times A vector of sample times.
+#' @param leaf_sample_ids A vector of shifted ids for the leaf samples.
+#' @param a Initial amount of diversity of sequences per host.
+#' @param b Amount of diversity of sequences to increase per host per unit time.
+#' @param make_plot Whether to plot the resulting phylogeny automatically. Default `FALSE`.
 #' @seealso reduce_transmission_history_bpb
 #' @seealso generate_sequences
 #' @importFrom ape read.tree
 #' @export
 geneology_to_phylogeny_bpb <- function(transmission_history,
-        infection_times, leaf_sample_ids,
-        sample_times, a = 5, b = 5, make_plot = FALSE) {
-
+                                       infection_times, leaf_sample_ids,
+                                       sample_times, a = 5, b = 5, make_plot = FALSE) {
     n <- length(transmission_history)
     labels <- 1:n
-    tt <- data.frame(donor = as.vector(transmission_history),
-            names = labels,
-            # time_infection
-            t_inf = as.vector(infection_times) / 12,  # Convert from months to years
-            #time_sampling
-            t_sam = as.vector(sample_times) / 12)  # Convert from months to years
+    tt <- data.frame(
+        donor = as.vector(transmission_history),
+        names = labels,
+        # time_infection
+        t_inf = as.vector(infection_times) / 12, # Convert from months to years
+        # time_sampling
+        t_sam = as.vector(sample_times) / 12
+    ) # Convert from months to years
     # This calls the bpb code
-    tree_and_tips <- sim.coal.tree.m(tt = tt, a = rep(a, n), b = rep(b, n),
-                                     tree_name = 1,
-                                     leaf_raw_ids = leaf_sample_ids)
+    tree_and_tips <- sim.coal.tree.m(
+        tt = tt, a = rep(a, n), b = rep(b, n),
+        tree_name = 1,
+        leaf_raw_ids = leaf_sample_ids
+    )
 
     # Need to pass in a seed argument here
     # Need to check here that ape is installed first. Else, warn and continue.
@@ -35,7 +44,9 @@ geneology_to_phylogeny_bpb <- function(transmission_history,
     tree <- ape::read.tree(text = tree_and_tips[["tree_newick"]])
     if (make_plot) plot(tree)
 
-    return(list("names_newick" = tree_and_tips[["names_newick"]],
-                "phylogeny" = tree_and_tips[["phylogeny"]],
-                "newick_string" = tree_and_tips[["tree_newick"]], "tree" = tree))
+    return(list(
+        "names_newick" = tree_and_tips[["names_newick"]],
+        "phylogeny" = tree_and_tips[["phylogeny"]],
+        "newick_string" = tree_and_tips[["tree_newick"]], "tree" = tree
+    ))
 }

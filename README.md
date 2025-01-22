@@ -4,30 +4,51 @@
 # SEEPS: Sequence Evolution and Epidemiological Process Simulator
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-A modern and modular simulator for infectious disease phylogenetics and phylodynamics.
-SEEPS provides advanced simulation capabilities for population dynamics,
-population sampling techniques (random, contact-tracing), genealogy and
-phylogeny simulation, and can simulate both evolved sequences (using a
-provided reference) and pairwise distance matrices.
+A modern and modular simulator for phylogenetics and phylodynamics
+written in pure R, SEEPS provides advanced simulation capabilities for
+population dynamics, sampling techniques, genealogy and phylogeny
+extraction, can generate trees, sequences, or pairwise distance
+matrices.
 
-<!-- One short paragraph about simulation -->
+Check out the
+[tutorial](https://mol-evo-epid.github.io/SEEPS/articles/SEEPS.html) for
+more details.
+
+If you use SEEPS in your research, please cite the following paper:
+
+> Kupperman, Ke, Leitner, *Paper title* (2023) Journal. DOI:
+> \[10.0000/000000000000\]
 
 ## Installation
 
-SEEPS is currently available from github, using devtools. 
-Stable public releases will be made soon through R-universe.
+You can install the released version of SEEPS from
+[R-universe](https://r-universe.dev/) with:
+
+``` r
+install.packages("SEEPS", repos = "https://r-universe.dev")
+```
+
+Or install the development version from
+[GitHub](https://github.com/MolEvolEpid) with:
+
+``` r
+devtools::install_github("MolEvolEpid/SEEPS")
+```
 
 ## Example
 
 Obtain pairwise distance matrices with as little as 3 lines of code:
 
 ``` r
-devtools::install_github("MolEvolEpid/SEEPS")
-parameters <- list("rate_function_parameters" = list("R0" = 5),
+install.packages("SEEPS", repos = "https://r-universe.dev")
+parameters <- list(
+    "rate_function_parameters" = list("R0" = 5),
     "minimum_population" = 15, "maximum_population_target" = 1000,
-    "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.006 * 300)
+    "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.0067 * 300
+)
 simultion_results <- SEEPS::simulate_classic_HIV(parameters)
 ```
 
@@ -46,7 +67,8 @@ simulate_classic_HIV <- function(params) {
     # First, determine the rate function for offspring generation
     # This obtains the function used in [Graw et al. 2012], [Kupperman et al. 2022]
     biphasic_rate_function <- get_biphasic_HIV_rate(
-        params = params[["rate_function_parameters"]])
+        params = params[["rate_function_parameters"]]
+    )
 
     # Forward pass to generate transmission history
     simulator_result <- gen_transmission_history_exponential_constant(
@@ -54,8 +76,9 @@ simulate_classic_HIV <- function(params) {
         offspring_rate_fn = biphasic_rate_function,
         total_steps = params[["total_steps_after_exp_phase"]],
         maximum_population_target = params[["maximum_population_target"]],
-        spike_root = FALSE)
-        # spike root option allows you to record distances to the initial infection
+        spike_root = FALSE
+    )
+    # spike root option allows you to record distances to the initial infection
 
     # Next, determine the sample of ID's to subsample.
     # This function takes independent random samples, but you could do
@@ -63,24 +86,28 @@ simulate_classic_HIV <- function(params) {
     target_sample <- random_fixed_size_ids(
         active = simulator_result[["active"]],
         minimum_size = params[["minimum_population"]],
-        spike_root = FALSE)
+        spike_root = FALSE
+    )
 
     # Obtain the transmission history for the subset of sampled individuals
     transmission_history <- reduce_transmission_history(
         samples = target_sample[["samples"]],
         parents = simulator_result[["parents"]],
         current_step = simulator_result[["t_end"]],
-        spike_root = FALSE)
+        spike_root = FALSE
+    )
 
     # Convert time signals to # of mutations using a rate
-    genealogy <- stochastify_transmission_history(
-        transmission_history = transmission_history$genealogy,
-        rate=params[["mutation_rate"]] / 12)  # Provide in rate per sequence per year
+    geneology <- stochastify_transmission_history(
+        transmission_history = transmission_history$geneology,
+        rate = params[["mutation_rate"]] / 12
+    ) # Provide in rate per sequence per year
 
-    # convert the genealogy into a distance matrix
-    distance_matrix <- genealogy_to_distance_matrix(
-        genealogy = genealogy$genealogy,
-        spike_root = FALSE)
+    # convert the geneology into a distance matrix
+    distance_matrix <- geneology_to_distance_matrix(
+        geneology = geneology$geneology,
+        spike_root = FALSE
+    )
 
     # Now return the result. Additional metadata used above can be collected
     # and added to the return list.
@@ -106,45 +133,54 @@ Showing 6 steps in this simulation:
 
 ## Additional options and features
 
--   Generate sequences with
-    [`seq-gen`](http://tree.bio.ed.ac.uk/software/seqgen/) \[Rambaut and
-    Grassly\]. Provide a phylogeny matrix and a root sequence to
-    `generate_sequences`. Pre-built rate models and reference sequences
-    are available. See the tutorial for more details.
-    <!-- todo: write this tutorial -->
--   Contact tracing. Use knowledge of the contact network to determine a
-    sample of individuals, rather than take a random sample.
--   Tree subsampling. Between steps 5 and 6 above, further drop
-    individuals using knowledge of the reconstructed tree.
--   We provide support for a broad class of discretized rate functions,
-    the most general being `get_Kphasic_hiv_rate_function`. This
-    function accepts a list of rates for each simulation step and the
-    length of each phase. <!-- This needs an example -->
--   Cluster-driven sampling with variable intensity. An approximation of
-    a hybrid between contact tracing and random sampling is to randomly
-    sample a proportion (a *sampling intensity* between 1% and 100%) of
-    the active infections, then select a small subset of closely related
-    sequences. For pathogens (SARS-CoV2) with little or no variation
-    across most transmission events, a lower density will produce more
-    diverse samples, while high sampling intensity will result in
-    closely related or many identical sequences being obtained. This
-    functionality is provided through the `proportional` option in
-    `random_ids` and the `reduce_large_matrix` functions.
--   Root-to-tip distances. Changing `spike_root` to`TRUE` above will add
-    and track the root infection through the framework. The last
-    row/column in the distance matrix will correspond to the distance to
-    the root infection. For large simulations, this may increase
-    computational time as the tree will be rooted at the index case,
-    rather than the most recent common ancestor (MRCA).
+- Generate sequences with
+  [`seq-gen`](http://tree.bio.ed.ac.uk/software/seqgen/) \[Rambaut and
+  Grassly\]. Provide a phylogeny matrix and a root sequence to
+  `generate_sequences`. Pre-built rate models and reference sequences
+  are available. See the tutorial for more details.
+  <!-- todo: write this tutorial -->
+- Contact tracing. Use knowledge of the contact network to determine a
+  sample of individuals, rather than take a random sample.
+- Tree subsampling. Between steps 5 and 6 above, further drop
+  individuals using knowledge of the reconstructed tree.
+- We provide support for a broad class of discretized rate functions,
+  the most general being `get_Kphasic_hiv_rate_function`. This function
+  accepts a list of rates for each simulation step and the length of
+  each phase. <!-- This needs an example -->
+- Cluster-driven sampling with variable intensity. An approximation of a
+  hybrid between contact tracing and random sampling is to randomly
+  sample a proportion (a *sampling intensity* between 1% and 100%) of
+  the active infections, then select a small subset of closely related
+  sequences. For pathogens (SARS-CoV2) with little or no variation
+  across most transmission events, a lower density will produce more
+  diverse samples, while high sampling intensity will result in closely
+  related or many identical sequences being obtained. This functionality
+  is provided through the `proportional` option in `random_ids` and the
+  `reduce_large_matrix` functions.
+- Root-to-tip distances. Changing `spike_root` to`TRUE` above will add
+  and track the root infection through the framework. The last
+  row/column in the distance matrix will correspond to the distance to
+  the root infection. For large simulations, this may increase
+  computational time as the tree will be rooted at the index case,
+  rather than the most recent common ancestor (MRCA).
 
 ## Todo list
 
-In no particular order.
+In no particular order. Please reach out or open a pull request if you
+would like to contribute to any of these features:
 
--   Fast subsampling options for obtaining clusters without needing to
-    sample a large proportion and down-sample the tree. This approach is
-    very very expensive for over 500 sequences.
--   Calculus utilities to convert almost any function into a rate
-    function (numerical integration).
--   Support joining clusters together from individual simulations to
-    form large distance matrices.
+- Support for multiple types within the agent-based simulation
+- Support for individual level contact tracing performance (give each
+  individual a discovery rate)
+- Temporal contact tracing, where contact tracing is a dynamic process
+  through time. This would be a more realistic model of contact tracing,
+  since it is not instantaneous.
+- Support for joining simulations together. This would form the basis of
+  a metapopulation model, and enable primative multithreading/multicore
+  simulations.
+
+Think we’re missing a core feature? Open an issue and let us know!
+
+## License
+
+SEEPS is licensed under a modified BSD-3 license.

@@ -1,5 +1,5 @@
 # Fixture for a very simple GTR+I+G model
-get_simple_GTR_model <-function() {  # nolint: object_name_linter
+get_simple_GTR_model <- function() { # nolint: object_name_linter
     model <- SEEPS::generate_rate_model(
         a2c = 1, a2g = 1,
         a2t = 1, c2g = 1,

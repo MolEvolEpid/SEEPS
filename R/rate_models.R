@@ -57,7 +57,7 @@ get_V3_rate_model <- function(nonzero_I = TRUE) { # nolint: object_name_linter
 #' @return A list of rate model parameters.
 #' @seealso generate_sequences generate_rate_model
 
-get_pol_rate_model <- function(nonzero_I = FALSE) {  # nolint: object_name_linter
+get_pol_rate_model <- function(nonzero_I = FALSE) { # nolint: object_name_linter
     rate_model <- list(
         a2c = -1, a2g = 1, # Need to get numbers here
         a2t = -1, c2g = -1,
@@ -79,29 +79,30 @@ get_pol_rate_model <- function(nonzero_I = FALSE) {  # nolint: object_name_linte
 
 #' Rate model for gag p17 estimated from the Swedish transmission chain
 #'
-#' Estimates for GTR+I+G rate model parameter from [Leitner et al. 1997] on the
-#' Swedish transmission chain on p17. Rate estimates for p17 follow from a
-#' secondary analysis.
+#' Estimates for GTR+I+G rate model parameter from on the
+#' Swedish transmission chain on p17. Rate estimates taken from
 #'
+#' To reproduce:
+#' * PhyML version: 3.3.20241207.
+#'  * Seed: 1737051145
 #' @return A list of rate model parameters.
 #' @seealso generate_sequences generate_rate_model
 #' @examples
 #' rate_model <- get_p17_rate_model()
 #' @export
 get_p17_rate_model <- function() {
-    stop("This model is not yet implemented")
     rate_model <- list(
-        a2c = -1, a2g = 1, # Need to get numbers here
-        a2t = -1, c2g = -1,
-        c2t = -1, g2t = -1,
-        fa = 0.3995, fc = 0.1677,
-        fg = 0.2487, ft = 0.1841,
+        a2c = 1.77349, a2g = 4.27979, # Need to get numbers here
+        a2t = 1.39689, c2g = 0.33689,
+        c2t = 7.21249, g2t = 1.00000,
+        fa = 0.39893, fc = 0.16854,
+        fg = 0.24897, ft = 0.18356,
         # i is observed fraction. With a larger sample,
         # this will be too low.
         i = 0.85,
         # alpha is the shape parameter for the discrete gamma
         # ncat is the number of categories
-        alpha = 0.257, ncat = 8
+        alpha = 0.253, ncat = 8
     )
     return(rate_model)
 }

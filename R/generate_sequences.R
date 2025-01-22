@@ -8,10 +8,13 @@
 #' If the root sequence is a character vector, it is flattened into a single string.
 
 #' @param phylogeny A phylogeny object
-#' @param root_sequence A root sequence
+#' @param branch_rate, The rate of mutations per site per unit time.
+#' @param root_sequence A root sequence to use for sequence generation.
 #' @param rate_per_nt Flag to indicate whether the mutation rate is
 #'   per nucleotide (nt) or per sequence. If per-sequence (`rate_per_nt=FALSE`),
 #' the mutation rate is normalized by the length of the root sequence.
+#' @param rng_seed Optional RNG seed for reproducability. If not set, the current
+#'  RNG seed is used. This makes Seq-Gen outputs fully reproducible.
 #' @param rate_model A list of GTR+I+G model parameters. Expects a list
 #'   of 13 parameters:  (6 rate parameters) `a2c`, `a2g`, `a2t`, `c2g`,
 #'  `c2t`, `g2t`, (nucleotide frequencies:) `fa, fc, fg, ft`,
@@ -30,8 +33,8 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
     # RNG seed is not supported in phyclust. Instead, the R rng is used.
     if (rng_seed != -1) {
         # Get R's current RNG seed
-        rng_seed_store <- rngtools::RNGseed()  # Get the current RNG seed
-        on.exit(rngtools::RNGseed(rng_seed_store))  # Restore the RNG seed
+        rng_seed_store <- rngtools::RNGseed() # Get the current RNG seed
+        on.exit(rngtools::RNGseed(rng_seed_store)) # Restore the RNG seed
         set.seed(rng_seed)
         # Need to fix this. Make seed explicit and explicitly manage state
     }
@@ -40,7 +43,7 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
         # Convert to a single character string
         root_sequence <- paste0(root_sequence, collapse = "")
     }
-    phylogeny_local <- phylogeny  # Don't modify the input argument
+    phylogeny_local <- phylogeny # Don't modify the input argument
     if (rate_per_nt) {
         # If the given mutation rate is in mutations per sequence, we need to
         # re-normalize it to mutations per site.
@@ -52,28 +55,38 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
     phylogeny_local[, 4] <- phylogeny_local[, 4] * branch_rate
 
     # Build seq-gen call components
-    newick_string <- SEEPS::phylogeny_to_newick(phylogeny = phylogeny_local,
-                                                mode = "mean",
-                                                label_mode = "abs")
+    newick_string <- SEEPS::phylogeny_to_newick(
+        phylogeny = phylogeny_local,
+        mode = "mean",
+        label_mode = "abs"
+    )
 
-    newick_string <- SEEPS::add_root_to_newick(newick_string)  # Add in the root node
+    newick_string <- SEEPS::add_root_to_newick(newick_string) # Add in the root node
     # Be careful! Phyclust does not tolerate any extra spaces in the opts
     model_string <- "-mGTR"
-    rate_string <- paste0("-r", rate_model["a2c"], " ", rate_model["a2g"], " ",
-                          rate_model["a2t"], " ", rate_model["c2g"], " ",
-                          rate_model["c2t"], " ", rate_model["g2t"])
-    freq_string <- paste0("-f", rate_model["fa"], " ", rate_model["fc"], " ",
-                          rate_model["fg"], " ", rate_model["ft"])
+    rate_string <- paste0(
+        "-r", rate_model["a2c"], " ", rate_model["a2g"], " ",
+        rate_model["a2t"], " ", rate_model["c2g"], " ",
+        rate_model["c2t"], " ", rate_model["g2t"]
+    )
+    freq_string <- paste0(
+        "-f", rate_model["fa"], " ", rate_model["fc"], " ",
+        rate_model["fg"], " ", rate_model["ft"]
+    )
     i_string <- paste0("-i", rate_model["i"])
     gamma_string <- paste0("-a", rate_model["alpha"], " ", "-g", rate_model["ncat"])
     # relaxed phylip format is easier to parse,
-    fmt_string <- paste("-op", "-k1", "-q")  # -q for quiet
+    fmt_string <- paste("-op", "-k1", "-q") # -q for quiet
 
-    input <- paste0("1 ", nchar(root_sequence), "\nroot ", root_sequence,
-                    "\n1\n", newick_string)
+    input <- paste0(
+        "1 ", nchar(root_sequence), "\nroot ", root_sequence,
+        "\n1\n", newick_string
+    )
     # Build the option string
-    call_opts <- paste(model_string, rate_string, freq_string,
-                      i_string, gamma_string, fmt_string)
+    call_opts <- paste(
+        model_string, rate_string, freq_string,
+        i_string, gamma_string, fmt_string
+    )
 
     # Call seq-gen
     # This uses the phyclust C library under-the-hood to avoid an issue with
@@ -84,6 +97,7 @@ generate_sequences <- function(phylogeny, branch_rate, root_sequence,
     return(fasta)
 }
 
+# A utility function to convert a reduced phylip file to a fasta file
 phylip_to_fasta <- function(phylip_string) {
     # convert a reduced phylip file to a fasta file
     lines <- unlist(strsplit(phylip_string, split = "\n"))
@@ -93,7 +107,7 @@ phylip_to_fasta <- function(phylip_string) {
         if (length(line) > 0) {
             tokens <- unlist(strsplit(line, split = " "))
             seq_name <- tokens[1]
-            seq <- tokens[length(tokens)]  # get the last token
+            seq <- tokens[length(tokens)] # get the last token
             fasta_string <- paste0(">", seq_name, "\n", seq, "\n")
             fasta_vector[index] <- fasta_string
             index <- index + 1
@@ -106,7 +120,10 @@ phylip_to_fasta <- function(phylip_string) {
 #'
 #' A utility function to build a dataframe from a fasta string.
 #'
-#'  @param fasta_string A string containing the fasta output from seq-gen
+#' @param fasta_string A string containing the fasta output from seq-gen
+#' @param trim If TRUE, remove sequences with empty names or sequences. Default is TRUE.
+#' @param include_root If TRUE, include the root sequence in the dataframe. Default is FALSE.
+#' This `root` is the root sequence used to generate the collection of sequences.
 #'
 #' @return A dataframe with the "seq" and "name" columns
 #' @export

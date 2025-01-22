@@ -20,26 +20,31 @@
 #'            This should be specified even if the founding infection is sampled,
 #'           as the root of the outbreak will have evolved since the founding event.
 #'
-#' @seealso reduce_transmission_history_bpb
+#' @seealso reduce_transmission_history() for within-host diversity
 #' @return A list with 1 element: "geneology" a matrix of transmission history
 #'   that encodes an evolutionary tree.
 #' @export
 #'
 #' @importFrom stats rpois
 reduce_transmission_history_mt <- function(samples, parents,
-                                        current_step, spike_root = FALSE) {
+                                           current_step, spike_root = FALSE) {
     samples_all <- unlist(samples)
     sample_times <- unlist(
         sapply(
             1:length(samples),
             function(i) {
-                rep(current_step[[i]], length(samples[[i]]))
+                if (length(samples[[i]]) > 0) {
+                    rep(current_step[[i]], length(samples[[i]]))
+                }
             }
         )
     )
-    samples <- samples_all  # Over-write the samples, now that we know when
+    samples <- samples_all # Over-write the samples, now that we know when
     # they were sampled
-
+    print("Samples")
+    print(samples)
+    print("Sample times")
+    print(sample_times)
     observation_size <- length(samples)
     geneology <- matrix(0, 2 * observation_size, 7)
     # Columns:
@@ -54,8 +59,8 @@ reduce_transmission_history_mt <- function(samples, parents,
     geneology[1:(2 * observation_size - 1), 1] <- c(1:(2 * observation_size - 1))
 
     # Taking into account of the sampling time
-    geneology[1:observation_size, 3] <- sample_times  # + rpois(observation_size, 6)
-    geneology[1:observation_size, 6] <- 1  # These are leaves
+    geneology[1:observation_size, 3] <- sample_times # + rpois(observation_size, 6)
+    geneology[1:observation_size, 6] <- 1 # These are leaves
     if (spike_root) {
         # Sample date for the initial infection is 0, no tip adjustment
         geneology[observation_size, 3] <- 0 # starts at the origin
@@ -103,7 +108,7 @@ reduce_transmission_history_mt <- function(samples, parents,
 
             IDs[coall] <- pp
             samples <- samples[-ind]
-            original_samples <- original_samples[-ind]  # remove from copy
+            original_samples <- original_samples[-ind] # remove from copy
             IDs <- IDs[-ind]
             pp <- pp + 1
             nNodes <- nNodes - 1
@@ -167,8 +172,8 @@ reduce_transmission_history <- function(samples, parents,
     geneology[1:(2 * observation_size - 1), 1] <- c(1:(2 * observation_size - 1))
 
     # Taking into account of the sampling time
-    geneology[1:observation_size, 3] <- current_step  # + rpois(observation_size, 6)
-    geneology[1:observation_size, 6] <- 1  # These are leaves
+    geneology[1:observation_size, 3] <- current_step # + rpois(observation_size, 6)
+    geneology[1:observation_size, 6] <- 1 # These are leaves
     if (spike_root) {
         # Sample date for the initial infection is 0, no tip adjustment
         geneology[observation_size, 3] <- 0 # starts at the origin
@@ -216,7 +221,7 @@ reduce_transmission_history <- function(samples, parents,
 
             IDs[coall] <- pp
             samples <- samples[-ind]
-            original_samples <- original_samples[-ind]  # remove from copy
+            original_samples <- original_samples[-ind] # remove from copy
             IDs <- IDs[-ind]
             pp <- pp + 1
             nNodes <- nNodes - 1
@@ -282,7 +287,7 @@ reduce_transmission_history <- function(samples, parents,
 #'
 #' @importFrom stats rpois
 reduce_transmission_history_bpb <- function( # nolint:object_length_linter
-                                            samples, parents, current_step) {
+                                            samples, parents, current_step, spike_root = FALSE) {
     leaves <- samples
 
     # Infections increase monotonically. Adding new sequences gives increased index.
@@ -320,7 +325,7 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
     trimmed_offspring_times <- offspring_times
     leaf_locations_mask <- parents_tree == -2 # Create vector of FALSE
     leaf_locations_mask[leaves] <- TRUE # Record locations
-    leaf_indices <- as.integer(parents_tree == -2)  # Create vector of 0
+    leaf_indices <- as.integer(parents_tree == -2) # Create vector of 0
     leaf_indices[leaves] <- samples
 
     exit_flag <- TRUE
@@ -393,16 +398,27 @@ reduce_transmission_history_bpb <- function( # nolint:object_length_linter
 # multiple samples taken.
 
 ############################
-
+#' Reduce simulation output where 2 or more sampling times are present, to be used with the within-host simulation
+#'
+#' Reduce a transmission history down to a vector format. This version expects to recieve a list of nested list
+#' `samples`, and a list of sampling times `current_step`.
+#'
+#' @param samples A list of vectors of individuals (integers) to include in the sample.
+#' @param parents A matrix of parental individuals that encodes the transmission
+#'            history and sample times.
+#' @param current_step A list of the current (absolute) time step in the simulation.
+#'
+#' @seealso reduce_transmission_history_bpb
+#'
 #' @export
 reduce_transmission_history_bpb2 <- function( # nolint:object_length_linter
-                                            samples, parents, current_step) {
+                                             samples, parents, current_step) {
     # samples is a list of samples taken at different times
     # sample_times is a vector of times at which samples were taken
     # samples[[1]] is a vector of samples taken at current_step[[1]]
     leaves <- unlist(samples)
-    samples_list <- samples  # Store the list of samples
-    samples <- unlist(samples)  # Flatten the list of samples
+    samples_list <- samples # Store the list of samples
+    samples <- unlist(samples) # Flatten the list of samples
 
 
     # Infections increase monotonically. Adding new sequences gives increased index.
@@ -442,13 +458,13 @@ reduce_transmission_history_bpb2 <- function( # nolint:object_length_linter
     leaf_locations_mask <- parents_tree == -2 # Create vector of FALSE
     leaf_locations_mask[leaves] <- TRUE # Record locations
     # Make a mask of the sample times, so we can account for the trimming
-    sample_time_vector <- rep(-1, length = length(parents_tree))  # -1 as status code
+    sample_time_vector <- rep(-1, length = length(parents_tree)) # -1 as status code
     for (i in seq_along(samples_list)) {
         # Store the index of the sample in the original list
         sample_time_vector[samples_list[[i]]] <- i
         # Don't convert to sample times yet, we need to trim the list first
     }
-    leaf_indices <- as.integer(parents_tree == -2)  # Create vector of 0
+    leaf_indices <- as.integer(parents_tree == -2) # Create vector of 0
     leaf_indices[leaves] <- samples
 
 

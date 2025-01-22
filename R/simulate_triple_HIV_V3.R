@@ -7,17 +7,33 @@
 #' coalescent process on the transmission history.
 #' The third matrix (matrix_seq) is derived from the sequences by computing the
 #' pairwise distances using the TN93 model.
-#'
-#' @return list with keys "matrix" and "input_params"
+#' @param params A list of parameters needed to run the simulation. The list should contain:
+#'  - rate_function_parameters: A list of parameters needed to evaluate the rate function.
+#'  - a: The initial amount of diversity of sequences per host.
+#'  - b: The amount of diversity of sequences to increase per host per unit time.
+#'  - mutation_rate: The mutation rate in per nt per month per sequence.
+#'  - contact_tracing_discovery_probability: The probability of uncovering each contact.
+#'  - minimum_population: The minimum population size.
+#'  - maximum_population_target: The maximum population size.
+#'  - total_steps_after_exp_phase: The total number of steps after the exponential phase.
+#' @return A list with keys "sequences", "params", "matrix_seqs",
+#'   "matrix_trans", "matrix_phylo", and "sequence_length".
+#'  - `sequences` is a dataframe of sequences.
+#'  - `params` is the input parameters.
+#'  - `matrix_trans` is the distance matrix derived from the transmission history.
+#'  - `matrix_phylo` is the distance matrix derived from the phylogeny.
+#'  - `matrix_seqs` is the distance matrix derived from the sequences, built from the phylogeny.
 #' @export
 #'
 #' @examples
-#' parameters <- list("rate_function_parameters" = list("R0"=5), "a"=5, "b"=5,
-#'                     "mutation_rate" = 0.0067,  # units are per nt
-#'                     "contact_tracing_discovery_probability" = 0.9,
-#'                     "minimum_population"=15, "maximum_population_target"=500)
+#' parameters <- list(
+#'     "rate_function_parameters" = list("R0" = 5), "a" = 5, "b" = 5,
+#'     "mutation_rate" = 0.0067, # units are per nt
+#'     "contact_tracing_discovery_probability" = 0.9,
+#'     "minimum_population" = 15, "maximum_population_target" = 500
+#' )
 #'
-simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linter
+simulate_all_paradigms_HIV_V3 <- function(params) { # nolint: object_name_linter
     # This gives an example "workflow" function for this package.
     # Simple integration tests should use similar workflows to insert changes.
 
@@ -25,12 +41,15 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
     # This obtains the function used in [Graw et al. 2012], [Kupperman et al. 2022]
 
     # Get the HIV1 reference sequence for V3
-    V3_sequence <- SEEPS::lookup_sequence_by_name(organism_name = "HIV1",  # nolint: object_name_linter
-                                                  region_name = "V3")
+    V3_sequence <- SEEPS::lookup_sequence_by_name(
+        organism_name = "HIV1", # nolint: object_name_linter
+        region_name = "V3"
+    )
     seq_len <- length(V3_sequence)
 
     biphasic_rate_function <- SEEPS::get_biphasic_HIV_rate(
-        params = params[["rate_function_parameters"]])
+        params = params[["rate_function_parameters"]]
+    )
 
     # Forward pass to generate transmission history
     simulator_result <- SEEPS::gen_transmission_history_exponential_constant(
@@ -38,7 +57,8 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         offspring_rate_fn = biphasic_rate_function,
         total_steps = params[["total_steps_after_exp_phase"]],
         maximum_population_target = params[["maximum_population_target"]],
-        spike_root = FALSE)
+        spike_root = FALSE
+    )
 
     # Simulate contact tracing on the contact network to identify a sample
     target_sample <- SEEPS::contact_traced_uniform_restarts_ids(
@@ -46,7 +66,8 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         parents = simulator_result[["parents"]],
         minimum_sample_size = params[["minimum_population"]],
         # probability of uncovering each contact
-        p = params[["contact_tracing_discovery_probability"]])
+        p = params[["contact_tracing_discovery_probability"]]
+    )
 
 
     ###################### Transmission history to matrix ######################
@@ -56,24 +77,28 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
     geneology_transmission <- SEEPS::reduce_transmission_history(
         samples = target_sample[["samples"]],
         parents = simulator_result$parents,
-        current_step = simulator_result$t_end)
+        current_step = simulator_result$t_end
+    )
 
     # Convert time signals to # of mutations using a rate
     geneology <- SEEPS::stochastify_transmission_history(
         transmission_history = geneology_transmission$geneology,
         # Rate here is in per nt per month per sequence
-        rate = params[["mutation_rate"]] / 12 * seq_len)
+        rate = params[["mutation_rate"]] / 12 * seq_len
+    )
 
     # convert the geneology into a distance matrix
     matrix_trans <- SEEPS::geneology_to_distance_matrix(
         geneology = geneology$geneology,
-        spike_root = FALSE)
+        spike_root = FALSE
+    )
 
     # Take a subsample of closest neighbors
     reduced_matrix_trans <- SEEPS::reduce_large_matrix(
         oversampled_matrix = matrix_trans,
         subsample_size = params[["minimum_population"]],
-        spike_root = FALSE)
+        spike_root = FALSE
+    )
 
     ###### Simulate phylogeny from transmission history for second matrix ######
 
@@ -81,7 +106,8 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
     res <- SEEPS::reduce_transmission_history_bpb(
         samples = target_sample[["samples"]],
         parents = simulator_result$parents,
-        current_step = simulator_result$t_end)
+        current_step = simulator_result$t_end
+    )
 
     # Provide values of a and b for the within-host diversity models.
     phylogeny <- SEEPS::geneology_to_phylogeny_bpb(
@@ -89,20 +115,23 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         infection_times = res$transmission_times,
         sample_times = res$sample_times,
         a = params[["a"]], b = params[["b"]],
-        leaf_sample_ids = res$transformed_sample_indices)
+        leaf_sample_ids = res$transformed_sample_indices
+    )
 
 
     # Convert the time signals into a # of mutations per site
     phylogeny <- SEEPS::stochastify_transmission_history(
-            transmission_history = phylogeny$phylogeny,
-            # Expect a rate in per nt per year
-            # input distances are in months
-            rate = params[["mutation_rate"]] / 12 * seq_len)
+        transmission_history = phylogeny$phylogeny,
+        # Expect a rate in per nt per year
+        # input distances are in months
+        rate = params[["mutation_rate"]] / 12 * seq_len
+    )
 
     # Only reconstruct the nodes corresponding to the sampled tips
     matrix_phylo <- SEEPS::geneology_to_distance_matrix(
         geneology = phylogeny$geneology,
-        spike_root = FALSE)
+        spike_root = FALSE
+    )
 
     # Re-order the matrix to match the sampling order
     # Useful so we can compare between matrices
@@ -116,7 +145,8 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         subsample_size = params[["minimum_population"]],
         spike_root = FALSE,
         index_id = reduced_matrix_trans$sampled_index,
-        sort_order = reduced_matrix_trans$sort_indices)
+        sort_order = reduced_matrix_trans$sort_indices
+    )
 
     ############ Simulate sequences from phylogeny for third matrix ############
 
@@ -132,10 +162,11 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
     # Call Seq-Gen to generate sequences from the provided reference sequence.
     sequences <- SEEPS::generate_sequences(
         phylogeny = phylogeny$geneology,
-        branch_rate = params[["mutation_rate"]] / 12,  # Convert time distances to per subs per site
+        branch_rate = params[["mutation_rate"]] / 12, # Convert time distances to per subs per site
         root_sequence = V3_sequence,
         rate_model = rate_model,
-        rate_per_nt = FALSE)  # Distances in phylogeny are already in per nt
+        rate_per_nt = FALSE
+    ) # Distances in phylogeny are already in per nt
     # The return is a string that we can write to a fasta file.
 
     # Instead, we'll convert it to a dataframe
@@ -157,17 +188,20 @@ simulate_all_paradigms_HIV_V3 <- function(params) {  # nolint: object_name_linte
         subsample_size = params[["minimum_population"]],
         spike_root = FALSE,
         index_id = reduced_matrix_trans$sampled_index,
-        sort_order = reduced_matrix_trans$sort_indices)
+        sort_order = reduced_matrix_trans$sort_indices
+    )
     # Drop the sequences we didn't keep
     sequences <- sequences[reduced_mat_data$keep_indices, ]
     # Drop the rows/cols of the trans and phylo matrices we didn't keep
 
 
 
-    return(list("sequences" = sequences, "params" = params,
-                "matrix_seqs" = reduced_mat_data$matrix,
-                "matrix_trans" = reduced_matrix_trans$matrix,
-                "matrix_phylo" = reduced_matrix_phylo$matrix,
-                # allow users to re-normalize data as they see fit
-                "sequence_length" = seq_len))
+    return(list(
+        "sequences" = sequences, "params" = params,
+        "matrix_seqs" = reduced_mat_data$matrix,
+        "matrix_trans" = reduced_matrix_trans$matrix,
+        "matrix_phylo" = reduced_matrix_phylo$matrix,
+        # allow users to re-normalize data as they see fit
+        "sequence_length" = seq_len
+    ))
 }

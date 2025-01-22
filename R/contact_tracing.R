@@ -35,26 +35,27 @@
 #' @export
 contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
                                        max_attempts = 1) {
-
     discovery_function <- uniform_discovery_factory(p = p)
     termination_function <- sufficient_data_data_factory(
-        minimum_size = 2 * minimum_sample_size)
+        minimum_size = 2 * minimum_sample_size
+    )
     # Call the contact tracing engine
     initial_detections <- sample(active, length(active), replace = FALSE)
-    result <- contact_tracing_engine(detected_id = initial_detections,
-                                     active = active,
-                                     parents = parents,
-                                     minimum_size = minimum_sample_size,
-                                     discovery_function = discovery_function,
-                                     termination_function = termination_function,
-                                     max_attempts = max_attempts)
+    result <- contact_tracing_engine(
+        detected_id = initial_detections,
+        active = active,
+        parents = parents,
+        minimum_size = minimum_sample_size,
+        discovery_function = discovery_function,
+        termination_function = termination_function,
+        max_attempts = max_attempts
+    )
     # Check the output before we return
     if (result[["success"]]) {
         return(result)
     } else {
         return(FALSE)
     }
-
 }
 
 # TODO: Refactor this with the above function to a single function with dispatcher
@@ -82,30 +83,32 @@ contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
 #' @return A list with four fields: "status", "samples", "success", and "found"
 #' if the algorithm fails to find a sample, FALSE is returned instead
 #' @export
-contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: object_name_linter
-                                               minimum_sample_size, p) {
-
+contact_traced_uniform_restarts_ids <- function(active, parents, # nolint: object_name_linter
+                                                minimum_sample_size, p) {
     discovery_function <- uniform_discovery_factory(p = p)
     termination_function <- sufficient_data_data_factory(
-        minimum_size = minimum_sample_size)
+        minimum_size = minimum_sample_size
+    )
     # Call the contact tracing engine
     initial_detections <- sample(active, length(active), replace = FALSE)
     results <- list()
-    group_id_counter <- 1  # Track which group each individual was sampled from
+    group_id_counter <- 1 # Track which group each individual was sampled from
     group_ids <- c()
     attempt_counter <- 1
     samples <- c()
-    target_size <- minimum_sample_size  # We modify this every time we restart
-    repeat {  # do-while pattern
+    target_size <- minimum_sample_size # We modify this every time we restart
+    repeat { # do-while pattern
         # Remove any discovered nodes from initial_detections
         initial_detections <- initial_detections[!(initial_detections %in% samples)]
-        result <- contact_tracing_engine(detected_id = initial_detections,
-                                        active = active,
-                                        parents = parents,
-                                        minimum_size = target_size,
-                                        discovery_function = discovery_function,
-                                        termination_function = termination_function,
-                                        max_attempts = 1)  # Do not try and repeat nodes
+        result <- contact_tracing_engine(
+            detected_id = initial_detections,
+            active = active,
+            parents = parents,
+            minimum_size = target_size,
+            discovery_function = discovery_function,
+            termination_function = termination_function,
+            max_attempts = 1
+        ) # Do not try and repeat nodes
         # Check the output before we return
         # A bit of a hack to get the group ids
         result[["group_ids"]] <- group_id_counter + 0 * result[["samples"]]
@@ -135,27 +138,38 @@ contact_traced_uniform_restarts_ids <- function(active, parents,  # nolint: obje
     result[["samples"]] <- samples
     result[["group_ids"]] <- group_ids
     result[["found"]] <- found
-    result[["status"]] <- paste("Found enough data with",
-                                attempt_counter - 1, "attempt(s)")
+    result[["status"]] <- paste(
+        "Found enough data with",
+        attempt_counter - 1, "attempt(s)"
+    )
     if (result[["success"]]) {
         return(result)
     } else {
         return(FALSE)
     }
-
 }
-
+#' Clean the sample structure
+#'
+#' Given a list of results from contact tracing, return a list of unique samples
+#' along with the group id for each of them in two lists.
+#'
+#' @param results A list of results from contact tracing. See
+#' `SEEPS::contact_tracing_engine` for more details.
+#'
+#' @export
 clean_sample_structure <- function(results) {
     # Return a list of unqiue samples along with the group id for each of them in two lists
     # Create
     all_samples <- unlist(lapply(results, function(x) x[["samples"]]))
     all_group_ids <- unlist(lapply(results, function(x) x[["group_ids"]]))
-    df_merged <- data.frame("samples"=I(all_samples), "group_ids"=I(all_group_ids))
+    df_merged <- data.frame("samples" = I(all_samples), "group_ids" = I(all_group_ids))
     df_merged <- df_merged[!duplicated(df_merged$samples), ]
 
     # Return the two numeric vectors from the columns of df_merged by key
-    return(list("samples" = as.numeric(unlist(df_merged$samples)),
-                "group_ids" = as.numeric(unlist(df_merged$group_ids))))
+    return(list(
+        "samples" = as.numeric(unlist(df_merged$samples)),
+        "group_ids" = as.numeric(unlist(df_merged$group_ids))
+    ))
 }
 
 ################################################################################
@@ -178,15 +192,16 @@ clean_sample_structure <- function(results) {
 #' @param parents A matrix encoding the transmission history
 #' @param minimum_size The minimum number of individuals to form a sample
 #' @param discovery_function A function to determine which individuals to trace
+#' @param max_attempts The maximum number of attempts to perform to obtain a sample, before failing.
 #' @param termination_function A function to determine when to terminate tracing a contact tracing.
 #' @return A list with three fields: "status", "samples", and "found"
 #' @export
 contact_tracing_engine <- function(detected_id,
-                                 active, parents,
-                                 discovery_function,
-                                 max_attempts,
-                                 termination_function,
-                                 minimum_size = 3) {
+                                   active, parents,
+                                   discovery_function,
+                                   max_attempts,
+                                   termination_function,
+                                   minimum_size = 3) {
     # Try to perform iterative contact tracing. If the length of the active
     # nodes is more than the minimum_size, collect into a list and return the output.
     # Else, try again.
@@ -199,10 +214,12 @@ contact_tracing_engine <- function(detected_id,
         # try
         start_index <- (attempts %% length(detected_id)) + 1
         starting_id <- detected_id[[start_index]]
-        result <- contact_tracing_core(detected_id = starting_id,
-                                       active = active, parents = parents,
-                                       discovery_function = discovery_function,
-                                       termination_function = termination_function)
+        result <- contact_tracing_core(
+            detected_id = starting_id,
+            active = active, parents = parents,
+            discovery_function = discovery_function,
+            termination_function = termination_function
+        )
         if (length(result$samples) >= minimum_size) {
             result[["success"]] <- TRUE
             break
@@ -228,12 +245,17 @@ contact_tracing_engine <- function(detected_id,
 #' @param parents A matrix of transmission history
 #' @param discovery_function A function that takes a list of nodes and relative
 #'   transmission times and determines which will be included
+#' @param termination_function A function that takes the list of discovered nodes
+#'  and determines if the tracing should stop
+#' @return A list with three fields: "found", "samples", and "status"
+#'
+#' @export
 contact_tracing_core <- function(detected_id, active, parents,
                                  discovery_function, termination_function) {
     # Core algorithm for contact tracing
     # We'll build a list of all discovered nodes, and then sample from this list.
     found <- c(detected_id)
-    seeds <- c(-1)  # Store the seed we used to find each new infection
+    seeds <- c(-1) # Store the seed we used to find each new infection
     # Allows us to be efficient (DAG property) and not have to search the entire
     # list of active nodes each time to preserve uniqueness. Use -1 as a flag
     # to indicate the initial detection event.
@@ -241,15 +263,17 @@ contact_tracing_core <- function(detected_id, active, parents,
     index <- 1
     while (TRUE) {
         current_individual <- found[[index]]
-        source_individual <- seeds[[index]]  # Preserve uniqueness
+        source_individual <- seeds[[index]] # Preserve uniqueness
         # get all all candidates from the tree
 
         all_can <- get_connections(seed = current_individual, parents = parents)
         # Determine which we will discover
-        discovered <- discovery_function(parent_node = all_can[["parent"]],
-                                         secondary_nodes = all_can[["secondary_infections"]],
-                                         infection_time = all_can[["infection_time"]],
-                                         secondary_time = all_can[["secondary_times"]])
+        discovered <- discovery_function(
+            parent_node = all_can[["parent"]],
+            secondary_nodes = all_can[["secondary_infections"]],
+            infection_time = all_can[["infection_time"]],
+            secondary_time = all_can[["secondary_times"]]
+        )
         # It's fine if we discover the same node twice, but we don't want to
         # contact trace from that node twice
         discovered <- discovered[discovered != source_individual]
@@ -290,7 +314,7 @@ get_connections <- function(seed, parents) {
     parent <- parents[seed, 1]
     infection_time <- parents[seed, 2]
     # Get all offspring whose parent is seed
-    if (seed %in% parents[, 1]) {  # Check that we have data
+    if (seed %in% parents[, 1]) { # Check that we have data
         # This returns their absolute ID (row number)
         secondary_infections <- which(parents[, 1] == seed)
         # Get the infection times of secondary infections
@@ -300,10 +324,12 @@ get_connections <- function(seed, parents) {
         secondary_infections <- NULL
         secondary_time <- NULL
     }
-    return(list(parent = parent,
-                infection_time = infection_time,
-                secondary_infections = secondary_infections,
-                secondary_times = secondary_time))
+    return(list(
+        parent = parent,
+        infection_time = infection_time,
+        secondary_infections = secondary_infections,
+        secondary_times = secondary_time
+    ))
 }
 
 #' A factory function to discover connections with uniform probability
@@ -312,6 +338,10 @@ get_connections <- function(seed, parents) {
 #' contact network will be revealed with uniform probability.
 #'
 #' @param p The discovery probability. A float between 0 and 1.
+#'
+#' @return A function that takes a parent node, a list of secondary nodes,
+#'  and their infection times, and returns a list of discovered nodes. Uses the
+#'  uniform probability distribution to determine who is sampled.
 #' @importFrom stats rbinom
 #' @seealso  contact_traced_uniform_ids
 #' @export
@@ -337,6 +367,10 @@ uniform_discovery_factory <- function(p) {
 #' Terminate when we have found a `minimum_size` number of active individuals
 #' @param minimum_size The minimum number of discovered active individuals to
 #' terminate
+#' @return A function that takes a list of found nodes, a list of active nodes,
+#' and an index, and returns a boolean indicating if the termination condition
+#' has been met. Returns true if the number of active nodes found is greater
+#' than or equal to `minimum_size`.
 #' @export
 sufficient_data_data_factory <- function(minimum_size) {
     terminate_when_enough_data <- function(found, active, index) {
@@ -356,6 +390,9 @@ sufficient_data_data_factory <- function(minimum_size) {
 #' When contact tracing, we don't want to stop until we have traced all known.
 #' This is computationally more expensive, but better describes reality.
 #'
+#' @return A function that takes a list of found nodes, a list of active nodes,
+#' and an index, and returns a boolean indicating if the termination condition
+#' has been met. Always returns False.
 #' @export
 never_terminate_early_factory <- function() {
     never_terminate_early <- function(found, active, index) {

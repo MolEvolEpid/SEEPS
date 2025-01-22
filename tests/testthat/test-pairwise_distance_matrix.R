@@ -1,11 +1,12 @@
 test_that("Check pairwise distance matrix construction, 3 samples", {
-
     simulator_result <- get_mocked_simulator_result_1()
     sample <- c(7, 9, 10)
-    geneology <- reduce_transmission_history(samples = sample,
-            parents = simulator_result$parents,
-            current_step = simulator_result$t_end)
-    geneology <- geneology$geneology  # Unpack and get the object
+    geneology <- reduce_transmission_history(
+        samples = sample,
+        parents = simulator_result$parents,
+        current_step = simulator_result$t_end
+    )
+    geneology <- geneology$geneology # Unpack and get the object
     set.seed(1947)
     geneology <- stochastify_transmission_history(geneology, rate = 4)
     # unpack
@@ -32,14 +33,14 @@ test_that("Check pairwise distance matrix construction, 3 samples", {
 })
 
 test_that("Check pairwise distance matrix construction, 4 samples", {
-
-
     simulator_result <- get_mocked_simulator_result_1()
     sample <- c(6, 7, 8, 10)
-    geneology <- reduce_transmission_history(samples = sample,
-            parents = simulator_result$parents,
-            current_step = simulator_result$t_end)
-    geneology <- geneology$geneology  # Unpack and get the object
+    geneology <- reduce_transmission_history(
+        samples = sample,
+        parents = simulator_result$parents,
+        current_step = simulator_result$t_end
+    )
+    geneology <- geneology$geneology # Unpack and get the object
     set.seed(1947)
     geneology <- stochastify_transmission_history(geneology, rate = 4)
     # unpack

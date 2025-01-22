@@ -11,8 +11,8 @@ three_leaf_phylo <- function() {
     phylogeny[3:4, 2] <- 5
     # Sample times
     phylogeny[1:3, 3] <- 3
-    phylogeny[4,   3] <- 2
-    phylogeny[5,   3] <- 1
+    phylogeny[4, 3] <- 2
+    phylogeny[5, 3] <- 1
     # Set Expected # of mutations based on time/rates
     phylogeny[1:3, 4] <- 1.1
     phylogeny[4, 4] <- 1.2
@@ -25,10 +25,12 @@ three_leaf_phylo <- function() {
     newick_tree_mean <- "(3_:1.1,(1_:1.1,2_:1.1):1.2);"
     newick_tree_mu_abs <- "(6_:1,(4_:1,5_:1):1);"
     newick_tree_mean_abs <- "(6_:1.1,(4_:1.1,5_:1.1):1.2);"
-    return(list("phylogeny" = phylogeny, "newick_tree_mu" = newick_tree_mu,
-                "newick_tree_mean" = newick_tree_mean,
-                "newick_tree_mu_abs" = newick_tree_mu_abs,
-                "newick_tree_mean_abs" = newick_tree_mean_abs))
+    return(list(
+        "phylogeny" = phylogeny, "newick_tree_mu" = newick_tree_mu,
+        "newick_tree_mean" = newick_tree_mean,
+        "newick_tree_mu_abs" = newick_tree_mu_abs,
+        "newick_tree_mean_abs" = newick_tree_mean_abs
+    ))
 }
 
 #' A helper function for tests. Builds a 4 leaf phylogeny with 2 internal nodes
@@ -46,7 +48,7 @@ four_leaf_phylo <- function() {
     # Sample times
     phylogeny[1:4, 3] <- 3
     phylogeny[4:5, 3] <- 2
-    phylogeny[6,   3] <- 1
+    phylogeny[6, 3] <- 1
     # Set Expected # of mutations based on time/rates
     phylogeny[1:4, 4] <- 1.1
 
@@ -60,8 +62,10 @@ four_leaf_phylo <- function() {
     newick_tree_mean <- "((1_:1.1,2_:1.1):1.2,(3_:1.1,4_:1.1):1.2);"
     newick_tree_mu_abs <- "((5_:1,6_:1):1,(7_:1,8_:1):1);"
     newick_tree_mean_abs <- "((5_:1.1,6_:1.1):1.2,(7_:1.1,8_:1.1):1.2);"
-    return(list("phylogeny" = phylogeny, "newick_tree_mu" = newick_tree_mu,
-                "newick_tree_mean" = newick_tree_mean,
-                "newick_tree_mu_abs" = newick_tree_mu_abs,
-                "newick_tree_mean_abs" = newick_tree_mean_abs))
+    return(list(
+        "phylogeny" = phylogeny, "newick_tree_mu" = newick_tree_mu,
+        "newick_tree_mean" = newick_tree_mean,
+        "newick_tree_mu_abs" = newick_tree_mu_abs,
+        "newick_tree_mean_abs" = newick_tree_mean_abs
+    ))
 }

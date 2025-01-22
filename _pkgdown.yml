@@ -1,0 +1,18 @@
+url: https://molevolepid.github.io/SEEPS/
+
+template:
+  bootstrap: 5
+  package: pkgdown
+  bootswatch: sandstone
+  navbar:
+    title: "SEEPS"
+    type: default
+    left:
+      - text: "Home"
+        href: index.html
+      - text: "Articles"
+        href: articles/
+      - text: "Reference"
+        href: reference/
+      - text: "GitHub"
+        href: "github.com/MolEvolEpid/SEEPS"
