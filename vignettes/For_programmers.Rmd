@@ -1,16 +1,16 @@
 ---
-title: "For programmers"
+title: "For_programmers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{For programmers}
+  %\VignetteIndexEntry{For_programmers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -21,20 +21,20 @@ library(SEEPS)
 Here we discuss several three primary data structures in SEEPS.
 
 1. Simulator outputs
-3. Phylogeny/Genealogy tree. 
+3. Phylogeny/Genealogy tree.
 
 ## Simulator outputs.
 
 Simulators in SEEPS outputs a list with the following fields.
 
 a. `parents` - A `K` by `2` matrix, where each row denotes an infection/birth event. The first column is the index of the parent, the second column is the time of the birth/infection event. This vector is pre-allocated to avoid repeated array resizing. Values after the last nonzero row should be disregarded in any downstream analysis.
-b. `active` - A vector of `M < K` indicies corresponding to active infections. These indices correspond to individuals that have not been removed from the population. 
+b. `active` - A vector of `M < K` indicies corresponding to active infections. These indices correspond to individuals that have not been removed from the population.
 c. `t_end` - The time index at the end of the simulation. A non-negative integer.
-d. `total_offspring` - The number of newly generated offspring added in the most previous update step. 
+d. `total_offspring` - The number of newly generated offspring added in the most previous update step.
 
 ## Internal representations of trees
 
-Phylogenies and genealogies are represented in an array. SEEPS representations are based on enumerating the parent of each node. Here, we detail the interpretation of each column. A tree looks like this example, from the getting started documentation. 
+Phylogenies and genealogies are represented in an array. SEEPS representations are based on enumerating the parent of each node. Here, we detail the interpretation of each column. A tree looks like this example, from the getting started documentation.
 
 ```r
 ##       [,1] [,2]       [,3]       [,4]         [,5] [,6] [,7]
@@ -77,8 +77,7 @@ Phylogenies and genealogies are represented in an array. SEEPS representations a
 * `Column 1` stores the index of the node. Index 0 is the root node. 1:N specify the tips that were used for reconstruction, the remaining nodes are internal nodes.
 * `Column 2` denotes the parental node. Node 0 is the root node. Arriving at node 0 implies that you have reached the root of the tree.
 * `Column 3` stores the time (relative to the zero) of the node. This can also be thought of as the "height" of the node.
-* `Column 4` stores the edge distance between the node and it's parent. Notice that the last (highest indexed) node is zero distance from the root `0`. 
-* `Column 5` stores a realized distance. The interpretation of this vlaue is context dependent. Here we used `geneology_to_phylogeny_bpb` so the distance units are in expected substitutions/site. If we use `stochastify_transmission_history`, this column would be integer valued. 
-* `Column 6` stores a boolean (0 or 1) denoting if the node is sampled. Some leaves may included in the tree that do not represent samples to ensure that the within host due to the transmission history is properly accounted for. 
-* `Column 7` stores the leaf index for each sample. Column 7 has the same sparsity pattern as column 6. 
-
+* `Column 4` stores the edge distance between the node and it's parent. Notice that the last (highest indexed) node is zero distance from the root `0`.
+* `Column 5` stores a realized distance. The interpretation of this vlaue is context dependent. Here we used `geneology_to_phylogeny_bpb` so the distance units are in expected substitutions/site. If we use `stochastify_transmission_history`, this column would be integer valued.
+* `Column 6` stores a boolean (0 or 1) denoting if the node is sampled. Some leaves may included in the tree that do not represent samples to ensure that the within host due to the transmission history is properly accounted for.
+* `Column 7` stores the leaf index for each sample. Column 7 has the same sparsity pattern as column 6.

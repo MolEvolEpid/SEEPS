@@ -9,8 +9,8 @@ vignette: >
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -23,20 +23,24 @@ SEEPS provides a variety of different building blocks for developing complex sam
 First, let's generate some data.
 
 ```{r}
-params <- list("rate_function_parameters" = list("R0" = 2.5),
-               "minimum_population" = 10, "maximum_population_target" = 104,
-               "total_steps_after_exp_phase" = 48, "mutation_rate" = 0.0067,
-               "a" = 5, "b" = 5)
+params <- list(
+    "rate_function_parameters" = list("R0" = 2.5),
+    "minimum_population" = 10, "maximum_population_target" = 104,
+    "total_steps_after_exp_phase" = 48, "mutation_rate" = 0.0067,
+    "a" = 5, "b" = 5
+)
 
 biphasic_rate_function <- get_biphasic_HIV_rate(
-        params = params[["rate_function_parameters"]])
+    params = params[["rate_function_parameters"]]
+)
 
 simulator_result <- gen_transmission_history_exponential_constant(
-        minimum_population = params[["minimum_population"]],
-        offspring_rate_fn = biphasic_rate_function,
-        total_steps = params[["total_steps_after_exp_phase"]],
-        maximum_population_target = params[["maximum_population_target"]],
-        spike_root = FALSE)
+    minimum_population = params[["minimum_population"]],
+    offspring_rate_fn = biphasic_rate_function,
+    total_steps = params[["total_steps_after_exp_phase"]],
+    maximum_population_target = params[["maximum_population_target"]],
+    spike_root = FALSE
+)
 ```
 
 ## Independent random sampling
@@ -45,10 +49,11 @@ A first, fundamental sampling strategy is independent random sapling. In this st
 
 ```{r}
 set.seed(1947)
-samples_ruif <- random_fixed_size_ids(  # Random sampling
-        active = simulator_result[["active"]],
-        minimum_size = params[["minimum_population"]],
-        spike_root = FALSE)
+samples_ruif <- random_fixed_size_ids( # Random sampling
+    active = simulator_result[["active"]],
+    minimum_size = params[["minimum_population"]],
+    spike_root = FALSE
+)
 print(samples_ruif)
 ```
 
@@ -59,21 +64,22 @@ set.seed(1947)
 samples_taken <- c()
 active <- simulator_result[["active"]]
 for (i in 1:4000) {
-  samples_ruif <- random_fixed_size_ids(  # Random sampling
+    samples_ruif <- random_fixed_size_ids( # Random sampling
         active = active,
-        minimum_size = 10)
+        minimum_size = 10
+    )
 
-  samples_taken <- c(samples_taken, samples_ruif[["samples"]])
+    samples_taken <- c(samples_taken, samples_ruif[["samples"]])
 }
 
 print(length(active))
 minx <- min(active)
 maxx <- max(active)
-histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot=FALSE)
-histogram$counts <- histogram$counts / 4000  # Normalize
-plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim=c(0, 0.12))
-axis(side=2, yaxp=c(0.06, 0.12, 3))
-abline(h=10/length(active), col="red")
+histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot = FALSE)
+histogram$counts <- histogram$counts / 4000 # Normalize
+plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim = c(0, 0.12))
+axis(side = 2, yaxp = c(0.06, 0.12, 3))
+abline(h = 10 / length(active), col = "red")
 ```
 
 ### Proportional sampling
@@ -86,9 +92,10 @@ Another simple strategy is to perform contact tracing starting from an initial (
 
 ```{r}
 samples <- SEEPS::contact_traced_uniform_ids(
-        parents = simulator_result[["parents"]],
-        active = simulator_result[["active"]],
-        minimum_sample_size = 1, p=0.5)
+    parents = simulator_result[["parents"]],
+    active = simulator_result[["active"]],
+    minimum_sample_size = 1, p = 0.5
+)
 print(samples)
 ```
 
@@ -96,15 +103,18 @@ This strategy is more complex, as we have a variable size of the cluster, and  t
 
 ```{r}
 contact_genealogy <- SEEPS::reduce_transmission_history(
-        samples = simulator_result[["active"]],
-        parents = simulator_result[["parents"]],
-        current_step = simulator_result[["t_end"]],
-        spike_root = FALSE)
+    samples = simulator_result[["active"]],
+    parents = simulator_result[["parents"]],
+    current_step = simulator_result[["t_end"]],
+    spike_root = FALSE
+)
 tree <- SEEPS::phylogeny_to_newick(contact_genealogy$geneology)
 tree <- ape::read.tree(text = tree)
-tree$tip.label <- lapply(tree$tip.label, function(x) {""})
+tree$tip.label <- lapply(tree$tip.label, function(x) {
+    ""
+})
 plot(ape::ladderize(tree))
-axis(1, col="black", col.ticks="black", col.axis="black", las=1)
+axis(1, col = "black", col.ticks = "black", col.axis = "black", las = 1)
 ```
 
 Let's repeat the same experiment as before, but with the new sampling strategy.
@@ -118,49 +128,49 @@ set.seed(1947)
 samples_taken <- c()
 sample_sizes <- c()
 active <- simulator_result[["active"]]
-k <- 10000
+k <- 50000
 for (i in 1:k) {
-  samples <- SEEPS::contact_traced_uniform_ids(
+    samples <- SEEPS::contact_traced_uniform_ids(
         parents = simulator_result[["parents"]],
         active = active,
-        minimum_sample_size = 1, p=0.98)  # Good contact tracing
+        minimum_sample_size = 1, p = 0.98
+    ) # Good contact tracing
 
-  samples_taken <- c(samples_taken, samples[["samples"]])
-  sample_sizes <- c(sample_sizes, length(samples[["samples"]]))
+    samples_taken <- c(samples_taken, samples[["samples"]])
+    sample_sizes <- c(sample_sizes, length(samples[["samples"]]))
 }
 ```
 
 ```{r}
-
 minx <- min(active)
 maxx <- max(active)
-histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot=FALSE)
+histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot = FALSE)
 
-histogram$counts <- histogram$counts / k  # Normalize
+histogram$counts <- histogram$counts / k # Normalize
 
-plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim=c(0, 0.06))
-axis(side=2, yaxp=c(0.01, 0.06, 5))
-abline(h=1/length(active), col="red")
-abline(h=2/length(active), col="red")
-abline(h=3/length(active), col="red")
-abline(h=4/length(active), col="red")
-abline(h=5/length(active), col="red")
+plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim = c(0, 0.06))
+axis(side = 2, yaxp = c(0.01, 0.06, 5))
+abline(h = 1 / length(active), col = "red")
+abline(h = 2 / length(active), col = "red")
+abline(h = 3 / length(active), col = "red")
+abline(h = 4 / length(active), col = "red")
+abline(h = 5 / length(active), col = "red")
 ```
 
 We see that there are discrete groups of individuals that are sampled with different probabilities. We can make this more clear with an additional histogram. The sampling is not uniform, as we see five different classes of individuals, with different probabilities of being sampled. This is due to the topology of the contact network.
 
 ```{r}
-counts <- histogram$counts[- which(histogram$counts == 0)]
-hist(counts, main = "Histogram of probabilities", xlab = "Probability", ylab = "Number of nodes(infections)", breaks=100)
-abline(v=1/length(active), col="red")
-abline(v=2/length(active), col="red")
-abline(v=3/length(active), col="red")
-abline(v=4/length(active), col="red")
-abline(v=5/length(active), col="red")
+counts <- histogram$counts[-which(histogram$counts == 0)]
+hist(counts, main = "Histogram of probabilities", xlab = "Probability", ylab = "Number of nodes(infections)", breaks = 100)
+abline(v = 1 / length(active), col = "red")
+abline(v = 2 / length(active), col = "red")
+abline(v = 3 / length(active), col = "red")
+abline(v = 4 / length(active), col = "red")
+abline(v = 5 / length(active), col = "red")
 ```
 
 ```{r}
-barplot(table(sample_sizes)/k, main = "Histogram of sample sizes", xlab = "Size of group", ylab = "Frequency")
+barplot(table(sample_sizes) / k, main = "Histogram of sample sizes", xlab = "Size of group", ylab = "Frequency")
 ```
 
 
@@ -177,44 +187,45 @@ set.seed(1947)
 samples_taken <- c()
 sample_sizes <- c()
 active <- simulator_result[["active"]]
-k <- 10000
+k <- 50000
 for (i in 1:k) {
-  samples <- SEEPS::contact_traced_uniform_ids(
+    samples <- SEEPS::contact_traced_uniform_ids(
         parents = simulator_result[["parents"]],
         active = active,
-        minimum_sample_size = 1, p=0.50)  # Good contact tracing
+        minimum_sample_size = 1, p = 0.50
+    ) # Good contact tracing
 
-  samples_taken <- c(samples_taken, samples[["samples"]])
-  sample_sizes <- c(sample_sizes, length(samples[["samples"]]))
+    samples_taken <- c(samples_taken, samples[["samples"]])
+    sample_sizes <- c(sample_sizes, length(samples[["samples"]]))
 }
 ```
 
 ```{r}
 minx <- min(active)
 maxx <- max(active)
-histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot=FALSE)
+histogram <- hist(samples_taken, breaks = maxx - minx + 1, plot = FALSE)
 
-histogram$counts <- histogram$counts / k  # Normalize
+histogram$counts <- histogram$counts / k # Normalize
 
-plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim=c(0, 0.05))
-axis(side=2, yaxp=c(0.01, 0.05, 4))
-abline(h=1/length(active), col="red")
-abline(h=2/length(active), col="red")
-abline(h=3/length(active), col="red")
-abline(h=4/length(active), col="red")
+plot(histogram, main = "Histogram of samples taken", xlab = "Individual ID", ylab = "Probability of being sampled", ylim = c(0, 0.05))
+axis(side = 2, yaxp = c(0.01, 0.05, 4))
+abline(h = 1 / length(active), col = "red")
+abline(h = 2 / length(active), col = "red")
+abline(h = 3 / length(active), col = "red")
+abline(h = 4 / length(active), col = "red")
 ```
 
 When contact tracing is reduced, the observed variance of the sampling distribution increases (for the same number of attempts).
 
 ```{r}
-counts <- histogram$counts[- which(histogram$counts == 0)]
-hist(counts, main = "Histogram of probabilities", xlab = "Probability", ylab = "Number of nodes(infections)", breaks=100)
+counts <- histogram$counts[-which(histogram$counts == 0)]
+hist(counts, main = "Histogram of probabilities", xlab = "Probability", ylab = "Number of nodes(infections)", breaks = 100)
 ```
 
 We can also observe the distribution of number of samples taken in each attempt at contact tracing.
 
 ```{r}
-barplot(table(sample_sizes)/k, main = "Histogram of sample sizes", xlab = "Size of group", ylab = "Frequency")
+barplot(table(sample_sizes) / k, main = "Histogram of sample sizes", xlab = "Size of group", ylab = "Frequency")
 ```
 
 The sampling is not uniform, as we see five different classes of individuals, with different probabilities of being sampled. This is due to the topology of the contact network.
@@ -234,9 +245,10 @@ Before presenting any code, we pause here to provide two notes of caution.
 ```{r}
 set.seed(1947)
 samples <- SEEPS::contact_traced_uniform_restarts_ids(
-        parents = simulator_result[["parents"]],
-        active = simulator_result[["active"]],
-        minimum_sample_size = 10, p=0.5)
+    parents = simulator_result[["parents"]],
+    active = simulator_result[["active"]],
+    minimum_sample_size = 10, p = 0.5
+)
 print(samples)
 ```
 

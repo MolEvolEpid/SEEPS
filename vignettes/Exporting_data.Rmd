@@ -1,16 +1,16 @@
 ---
-title: "Exporting data"
+title: "Exporting_data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Exporting data}
+  %\VignetteIndexEntry{Exporting_data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+    collapse = TRUE,
+    comment = "#>"
 )
 ```
 
@@ -33,55 +33,64 @@ First, let's generate some data for a population of 150 individuals with 15 samp
 
 ```{r}
 set.seed(1947)
-params <- list("rate_function_parameters" = list("R0" = 2),
-                   "minimum_population" = 5, "maximum_population_target" = 150,
-                   "total_steps_after_exp_phase" = 48, "mutation_rate" = 0.0067,
-                   "a" = 5, "b" = 5)
+params <- list(
+    "rate_function_parameters" = list("R0" = 2),
+    "minimum_population" = 5, "maximum_population_target" = 150,
+    "total_steps_after_exp_phase" = 48, "mutation_rate" = 0.0067,
+    "a" = 5, "b" = 5
+)
 
 biphasic_rate_function <- get_biphasic_HIV_rate(
-        params = params[["rate_function_parameters"]])
+    params = params[["rate_function_parameters"]]
+)
 
 simulator_result <- gen_transmission_history_exponential_constant(
-        minimum_population = params[["minimum_population"]],
-        offspring_rate_fn = biphasic_rate_function,
-        total_steps = params[["total_steps_after_exp_phase"]],
-        maximum_population_target = params[["maximum_population_target"]],
-        spike_root = FALSE)
+    minimum_population = params[["minimum_population"]],
+    offspring_rate_fn = biphasic_rate_function,
+    total_steps = params[["total_steps_after_exp_phase"]],
+    maximum_population_target = params[["maximum_population_target"]],
+    spike_root = FALSE
+)
 
-target_sample <- random_fixed_size_ids(  # Random sampling
-        active = simulator_result[["active"]],
-        minimum_size = params[["minimum_population"]],
-        spike_root = FALSE)
+target_sample <- random_fixed_size_ids( # Random sampling
+    active = simulator_result[["active"]],
+    minimum_size = params[["minimum_population"]],
+    spike_root = FALSE
+)
 
 transmission_history <- reduce_transmission_history(
-        samples = target_sample[["samples"]],
-        parents = simulator_result[["parents"]],
-        current_step = simulator_result[["t_end"]],
-        spike_root = FALSE)
+    samples = target_sample[["samples"]],
+    parents = simulator_result[["parents"]],
+    current_step = simulator_result[["t_end"]],
+    spike_root = FALSE
+)
 
 # Get the sequence length
-V3_sequence <- SEEPS::lookup_sequence_by_name(organism_name = "HIV1",  # nolint: object_name_linter
-                                                  region_name = "Env-Clinical")
+V3_sequence <- SEEPS::lookup_sequence_by_name(
+    organism_name = "HIV1", # nolint: object_name_linter
+    region_name = "Env-Clinical"
+)
 
 # Randomize edge lengths
 geneology <- stochastify_transmission_history(
-        transmission_history = transmission_history$geneology,
-        rate=params[["mutation_rate"]] / 12 * length(V3_sequence))  # Provide in rate per sequence per year
+    transmission_history = transmission_history$geneology,
+    rate = params[["mutation_rate"]] / 12 * length(V3_sequence)
+) # Provide in rate per sequence per year
 # Get the rate model for the V3 region
 rate_model <- SEEPS::get_V3_rate_model(nonzero_I = TRUE)
 
 print(geneology)
 sequences_fasta <- SEEPS::generate_sequences(
-        phylogeny = geneology$geneology,
-        branch_rate = params[["mutation_rate"]] / 12,
-        root_sequence = V3_sequence,
-        rate_model = rate_model,
-        rate_per_nt = FALSE)  # Distances in phylogeny are already in per nt
-
+    phylogeny = geneology$geneology,
+    branch_rate = params[["mutation_rate"]] / 12,
+    root_sequence = V3_sequence,
+    rate_model = rate_model,
+    rate_per_nt = FALSE
+) # Distances in phylogeny are already in per nt
 ```
 
 ```{r}
-newick_tree <- SEEPS::phylogeny_to_newick(geneology$geneology, mode="mean", label_mode="abs")
+newick_tree <- SEEPS::phylogeny_to_newick(geneology$geneology, mode = "mean", label_mode = "abs")
 sequences_df <- SEEPS::fasta_string_to_dataframe(sequences_fasta)
 ```
 
@@ -115,8 +124,6 @@ Alternatively, we can export the tree to a text file using standard library tool
 fileConnection <- file("tree.txt", "w")
 writeLines(newick_tree, fileConnection)
 close(fileConnection)
-
-
 ```
 
 ## Sequences (fasta)
@@ -146,7 +153,8 @@ A tree-free reduced representation of the evolutionary history of a set of sampl
 As a phylogeny or genealogy specifies the necessary branch lengths and topology of a tree, it can be used to calculate a distance matrix.
 ```{r}
 distance_matrix <- SEEPS::geneology_to_distance_matrix(
-        geneology = geneology$geneology)
+    geneology = geneology$geneology
+)
 
 print(distance_matrix)
 ```

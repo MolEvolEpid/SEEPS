@@ -22,14 +22,15 @@ Let's look at the following piece of code and break down the arguments:
 ``` {r}
 set.seed(1947)
 offspring_rate_fn <- SEEPS::get_biphasic_HIV_rate(
-  params = list("R0" = 5))
+    params = list("R0" = 5)
+)
 
 # Simulate
 transmission_history <- SEEPS::gen_transmission_history_exponential_constant(
-  offspring_rate_fn = offspring_rate_fn,
-  maximum_population_target = 50,
-  minimum_population = 15,
-  total_steps = 48,
+    offspring_rate_fn = offspring_rate_fn,
+    maximum_population_target = 50,
+    minimum_population = 15,
+    total_steps = 48,
 )
 ```
 
@@ -82,10 +83,10 @@ The full tree is rarely accessible, only samples from it are ever practically ac
 
 ```{r}
 sample <- SEEPS::contact_traced_uniform_restarts_ids(
-  active = transmission_history$active,
-  parents = transmission_history$parents,
-  minimum_sample_size = 6,
-  p = 0.4
+    active = transmission_history$active,
+    parents = transmission_history$parents,
+    minimum_sample_size = 6,
+    p = 0.4
 )
 ```
 
@@ -109,24 +110,26 @@ The full tree is rarely accessable, only samples from it are ever practically ac
 
 ```{r}
 genealogy <- SEEPS::reduce_transmission_history_bpb(
-  sample = sample$samples,
-  parents = transmission_history$parents,
-  current_step = transmission_history$t_end)
+    sample = sample$samples,
+    parents = transmission_history$parents,
+    current_step = transmission_history$t_end
+)
 print(genealogy)
 ```
 
 Now we can simulate within host diversity as we know where the transmission events occurred.
 
-```{r, label="within-host"}
+```{r, label = "within-host"}
 phylogeny <- SEEPS::geneology_to_phylogeny_bpb(
-  transmission_history = genealogy$parents,
-  infection_times = genealogy$transmission_times,
-  leaf_sample_ids = genealogy$transformed_sample_indices,
-  sample_times = genealogy$sample_times,
-  a = 5, b = 5)
+    transmission_history = genealogy$parents,
+    infection_times = genealogy$transmission_times,
+    leaf_sample_ids = genealogy$transformed_sample_indices,
+    sample_times = genealogy$sample_times,
+    a = 5, b = 5
+)
 # print(phylogeny)
 # print(phylogeny[,6])
-#print(sum(phylogeny[,6]))
+# print(sum(phylogeny[,6]))
 ```
 
 This phylogeny list contains 4 fields:
@@ -144,25 +147,30 @@ We can convert the phylogeny to a Newick string and load it into ape to visualiz
 
 ```{r}
 newick_string <- SEEPS::phylogeny_to_newick(phylogeny$phylogeny,
-  mode="mean", label_mode="abs")
+    mode = "mean", label_mode = "abs"
+)
 
 tree <- ape::read.tree(text = newick_string)
 plot(ape::ladderize(tree))
 box("outer")
-title(main="Simulated phylogeny for 6 sampled infections",
-  xlab="Time from index infection (Months)")
-axis(1, col="black", col.ticks="black", col.axis="black", las=1)
+title(
+    main = "Simulated phylogeny for 6 sampled infections",
+    xlab = "Time from index infection (Months)"
+)
+axis(1, col = "black", col.ticks = "black", col.axis = "black", las = 1)
 ```
 
 Most of the tips are unsampled, so we can remove them from the tree and reveal the _discoverable_ relationship between the sequences.
 
 ```{r}
-tree <- ape::drop.tip(tree, "")  # unsampled tips have no index
+tree <- ape::drop.tip(tree, "") # unsampled tips have no index
 plot(ape::ladderize(tree))
 box("outer")
-title(main="Observable phylogeny for 6 sampled infections",
-  xlab="Time from most recent common ancestor (Months)")
-axis(1, col="black", col.ticks="black", col.axis="black", las=1)
+title(
+    main = "Observable phylogeny for 6 sampled infections",
+    xlab = "Time from most recent common ancestor (Months)"
+)
+axis(1, col = "black", col.ticks = "black", col.axis = "black", las = 1)
 ```
 
 ### Pairwise distance matrix
@@ -174,17 +182,18 @@ print(phylogeny$phylogeny)
 ```
 
 ```{r}
-mean_distances <- SEEPS::geneology_to_distance_matrix(phylogeny$phylogeny, mode="mean")
-print(mean_distances * 0.0067 / 12 * 300)  # subs / (year * site) * months/year * # of sites
+mean_distances <- SEEPS::geneology_to_distance_matrix(phylogeny$phylogeny, mode = "mean")
+print(mean_distances * 0.0067 / 12 * 300) # subs / (year * site) * months/year * # of sites
 ```
 
 This matrix can be constructed using either _expected_ or _sampled_ distances. We can sample the distances and update the phylogeny object.
 Note that sampling edge lengths results in the tree no longer being [ultametric](https://en.wikipedia.org/wiki/Distance_matrix#Ultrametric_distance_matrix).
 ```{r}
 sampled_phylogeny <- SEEPS::stochastify_transmission_history(
-            transmission_history = phylogeny$phylogeny,
-            rate = 0.0067 / 12 * 300)  # subs / (year * site) * months/year * # of sites
-sampled_distances <- SEEPS::geneology_to_distance_matrix(sampled_phylogeny$geneology, mode="mu")
+    transmission_history = phylogeny$phylogeny,
+    rate = 0.0067 / 12 * 300
+) # subs / (year * site) * months/year * # of sites
+sampled_distances <- SEEPS::geneology_to_distance_matrix(sampled_phylogeny$geneology, mode = "mu")
 print(sampled_distances)
 ```
 

@@ -1,0 +1,105 @@
+---
+title: "Agent-based forward simulation API"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulation_API}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>"
+)
+```
+
+```{r setup}
+library(SEEPS)
+set.seed(1945)
+```
+
+In this vignette, we document how to use the agent-based forward simulation in SEEPS to simulate a transmission history. We show how to initialize, run,and clean up a simulation.
+
+## Initialization
+
+To initialize a simulation in SEEPS, we need to initialize two groups of information: the parameterization ($\theta$), and a state $x_0$. Because R is a functional language, the parameters stored in $\theta$ may be functions. The state $x_0$ is a list of vectors that represent the current state of the simulation.
+
+We start by wrapping our parameters together by invoking the `wrap_parameters` function. This function takes a list of parameters and returns a list encapsulating the parameters. Our later functions will take this list as a single argument. This allows the API to be flexible.
+
+```{r}
+parameters <- wrap_parameters(
+    minimum_population = 5,
+    maximum_population_target = 7,
+    offspring_rate_fn = get_biphasic_HIV_rate(
+        params = list("R0" = 2)
+    ),
+    total_steps = 4,
+    spike_roo = ALSE
+)
+```
+
+These options are documented in `wrap_parameters`.
+
+Now, we may initialize a simulation by invoking the `initialize` function. We do it in this order to use both the `total_steps` and `maximum_population_target` parameters to pre-allocate space. This helps avoid repeated array resizing when recording transmissions/new infections. The initial state has enough storage to have `maximum_population_target` individuals, at least `total_steps` times over. This initialization is O(n), but we find that it is a good trade-off for speed, as it can avoid repeated array resizing.
+
+```{r}
+initial_state <- initialize(parameters)
+print(initial_state)
+```
+
+## What's in a state
+
+The state stores several pieces of information.
+
+The `parents` field is a matrix, where each row stores information encoding a birth event. For exmaple, suppose row 3 of `parents` is `[1, 2]`. The first column indicates the parent of individual `3`, (individual `1`), and the second column stores the time of the transmission as time `2`. By default, SEEPS presumes that the time step is in months (typically used for HIV), however users are free to adjust their rates accordingly.
+
+The `active` field stores a list of individuals that can transmit the disease. Individuals are considered `active` if they can generate new cases - even if the probability of such transmission is low.
+
+The `birth_step` stores the time that each individual/infection was born. The `end_step` is sampled for that individual at their birth time. Advanced users may want to adjust these values, and can do so dynamically by augmenting the simulation.
+
+The `curr_step` and `active_index` are used internally as counters to keep track of the current time step and the current active index. These should not be modified by the user.
+
+The `total_offspring` field stores the number of new infections generated in the most recent time step. Users wishing to simply recover the number of new infections can use this field, and do not need to parse the `parents` or `active` fields. This number may be zero. The number of expected individuals obtained by summing each individual's expected number of offspring may be truncated to ensure that the popuation does not exceed `maximum_population_target`. Users wishing to avoid this behavior may set `maximum_population_target` to a large number. Using `Inf` is not reccomended, as this may lead to eccessive memory usage.
+
+## Running the simulation
+
+To run the simulation, we provide two convience functions: `gen_exp_phase` and `gen_const_phase`. These functions are convience wrappers around a core `step` function.
+
+```{r}
+state1 <- SEEPS::step(initial_state, parameters)
+state2 <- SEEPS::step(state1, parameters)
+```
+
+The `gen_exp_phase` function simulates the exponential phase of the epidemic. It steps forward the simulation until there are at least:
+* `minimum_population` individuals in the population, and
+* there are at least 90% of the `maximum_population_target` individuals in the population.
+
+The `gen_const_phase` function simulates the constant phase of the epidemic. It steps forward the simulation for `total_steps`.
+
+### Tricks for complex setups
+Interventions by public health agencies or governments are the primary source of complexity in epidemics.
+
+* Classical interventions that reduce $R_0$ can be tested, by changing the `offspring_rate_fn` parameter.
+* To simulate a bottleneck, one can set `maximum_population_target` parameter to a small number after some steps.
+* The time to treatement may be dynamic. For example a new testing facility may open that reduces the time to treatment. At each point in time, the user can reduce the `t_end` parameter to reflect the new time to treatment. (Better support for this is coming.)
+
+To efficiently implement masking or censoring effects to the simulation, we provide two additional convience functions, `remove_samples` and `keep_samples`. These functions accept a state object, and a vector of individual id's that will be removed or kept, respectively.
+
+Suppose we want to remove individual 1 from the simulation, then take another step, we can do so by invoking the `remove_samples` function:
+
+```{r}
+state2r <- remove_samples(state2, c(1))
+state3 <- SEEPS::step(state2r, parameters)
+```
+
+These functions are intended to be used as an interface to the simulation. Other methods can be used to select which individuals to remove or keep.
+
+## Cleaning up the simulation
+
+Many of the internals are no longer of interest. The buffers for `birth_step` and `end_step` are no longer needed. We keep the `active`, `parents`, `total_offspring`, and `curr_step` field (relabeling `curr_step` as `t_end`). This is done by invoking the `clean_up` function.
+
+```{r}
+final_state <- clean_up(state3)
+print(final_state)
+```
