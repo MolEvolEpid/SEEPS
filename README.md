@@ -43,7 +43,7 @@ devtools::install_github("MolEvolEpid/SEEPS")
 Obtain pairwise distance matrices with as little as 3 lines of code:
 
 ``` r
-install.packages("SEEPS")
+install.packages("SEEPS", repos = "https://r-universe.dev")
 parameters <- list(
     "rate_function_parameters" = list("R0" = 5),
     "minimum_population" = 15, "maximum_population_target" = 1000,

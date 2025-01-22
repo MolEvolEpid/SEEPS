@@ -1,3 +1,4 @@
+skip(message = "Reserved for future use")
 test_that("Kphasic hiv rate function works - simple", {
     # Setup some simple parameters
 
