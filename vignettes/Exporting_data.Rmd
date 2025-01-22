@@ -1,8 +1,8 @@
 ---
-title: "Exporting_data"
+title: "Exporting Data"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Exporting_data}
+  %\VignetteIndexEntry{Exporting Data}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -113,7 +113,7 @@ The returned Newick string can be read into ape and visualized.
 print(newick_tree)
 ```
 
-```{r}
+```{r, fig.alt="A ladderized phylogenetic tree plot"}
 tree <- ape::read.tree(text = newick_tree)
 plot(ape::ladderize(tree))
 ```

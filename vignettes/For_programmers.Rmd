@@ -1,8 +1,8 @@
 ---
-title: "For_programmers"
+title: "For Programmers"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{For_programmers}
+  %\VignetteIndexEntry{For Programmers}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

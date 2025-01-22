@@ -2,7 +2,7 @@
 title: "Agent-based forward simulation API"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Simulation_API}
+  %\VignetteIndexEntry{Agent-based forward simulation API}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -35,7 +35,7 @@ parameters <- wrap_parameters(
         params = list("R0" = 2)
     ),
     total_steps = 4,
-    spike_roo = ALSE
+    spike_root = FALSE
 )
 ```
 

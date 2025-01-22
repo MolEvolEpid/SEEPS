@@ -2,7 +2,7 @@
 title: "Longitudinal sampling with SEEPS"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Longitudinal_sampling_with_SEEPS}
+  %\VignetteIndexEntry{Longitudinal sampling with SEEPS}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -166,20 +166,23 @@ gen_transmission_history_exponential_constant_local <- function(minimum_populati
 }
 ```
 
-We'll use a different rate function, where the rate is 50 times higher in the first 3 months than in the remainder of the infection.
+We'll use a different rate function, where the rate is 50 times higher in the first 3 months than in the remainder of the infection. We set the expected length of the each infection to 30 months (2.5 years).
 
 ```{r}
-# offspring_rate_fn <- get_biphasic_HIV_rate_function(50, 3, 24, params = list("R0" = 1.1))
+offspring_rate_fn <- get_biphasic_HIV_rate_function(50, 3, 30, params = list("R0" = 1.3))
 ```
 
 ```{r}
-maximum_population_target <- 30
+# maximum_population_target <- 30
+maximum_population_target <- 45
 simulator_result <- gen_transmission_history_exponential_constant_local(
     minimum_population = 6,
-    # offspring_rate_fn = offspring_rate_fn,
-    offspring_rate_fn = SEEPS::get_biphasic_HIV_rate(params = list("R0" = 1.3)),
+    offspring_rate_fn = offspring_rate_fn,
+    # offspring_rate_fn = SEEPS::get_biphasic_HIV_rate(params = list("R0" = 1.3)),
+    # offspring_rate_fn = SEEPS::get_biphasic_HIV_rate(params = list("R0" = 1.2)),
     maximum_population_target = maximum_population_target,
-    total_steps = 48
+    # total_steps = 48
+    total_steps = 60
 )
 
 removed_list <- list()
