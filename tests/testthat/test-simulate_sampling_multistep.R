@@ -1,6 +1,6 @@
 test_that("check multiple time point sampling of bpb", {
     simulator_result <- get_mocked_simulator_result_1A()
-    
+
     s1 <- simulator_result$s1
     expect_equal(s1$samples, c(4, 8, 10))
     t1 <- simulator_result$t1
@@ -15,8 +15,7 @@ test_that("check multiple time point sampling of bpb", {
     # Backtrace the samples to the root
     # print(simulator_result$parents[, 1:15])
     phylo <- SEEPS::reduce_transmission_history_bpb2(samples, result$parents, times)
-    
+
     expect_equal(phylo$transformed_sample_indices, c(0, 3, 4, 7, 8, 10, 11))
     expect_equal(phylo$sample_times, c(2.001, 10., 5., 10., 5., 5., 10.))
-
 })

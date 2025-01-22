@@ -8,31 +8,32 @@ pkgenv[["seq_store"]] <- list()
     # Load in the fasta and map data so it can obtain sequences
 
     # This is a function defined in the R/load_sequences.R file
-    load_raw_data()  # nolint: object_usage_linter
+    load_raw_data() # nolint: object_usage_linter
 }
 
-.onAttach <- function(libname, pkgname) {
+.onAttach <- function(lib, pkg) {
     # Pretty print a load message
-    print_load_message()
+    packageStartupMessage(print_load_message())
+    invisible()
 }
 
 print_load_message <- function() {
-    cat(
-"                              __   \n",
-"                             \\ \\  \n",
-" _____________________________\\ \\ \n",
-"/_____/_____/_____/_____/_____/ / \n",
-"                             /_/  \n",
-"   _____ ________________  _____  \n",
-"  / ___// ____/ ____/ __ \\/ ___/  \n",
-"  \\__ \\/ __/ / __/ / /_/ /\\__ \\   \n",
-" ___/ / /___/ /___/ ____/___/ /   \n",
-"/____/_____/_____/_/    /____/    \n",
-"  __                              \n",
-" / /                              \n",
-"/ / ______________________________\n",
-"\\ \\/_____/_____/_____/_____/_____/\n",
-" \\_\\                              \n",
-"                                  \n")
+    paste0(
+        "                              __   \n",
+        "                             \\ \\  \n",
+        " _____________________________\\ \\ \n",
+        "/_____/_____/_____/_____/_____/ / \n",
+        "                             /_/  \n",
+        "   _____ ________________  _____  \n",
+        "  / ___// ____/ ____/ __ \\/ ___/  \n",
+        "  \\__ \\/ __/ / __/ / /_/ /\\__ \\   \n",
+        " ___/ / /___/ /___/ ____/___/ /   \n",
+        "/____/_____/_____/_/    /____/    \n",
+        "  __                              \n",
+        " / /                              \n",
+        "/ / ______________________________\n",
+        "\\ \\/_____/_____/_____/_____/_____/\n",
+        " \\_\\                              \n",
+        "                                  \n"
+    )
 }
-

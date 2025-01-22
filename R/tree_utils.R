@@ -30,25 +30,26 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu", label_mode = "local") {
     global_to_local <- rep(0, max(inds))
     global_to_local[inds] <- seq_along(M)
     # So g_2_l[global] = local for O(1) lookup
-    branches <- character(n_nodes)  # Sub-tree at each branch
+    branches <- character(n_nodes) # Sub-tree at each branch
     # Fill in the names of the leaf nodes
     names <- lapply(inds, function(x) paste0(x, "_"))
-    branches[inds] <- names  # place names where they are expected by the phylogeny
+    branches[inds] <- names # place names where they are expected by the phylogeny
     merge_nodes <- vector("list", length = n_nodes)
     for (index in 1:(n_nodes - 1)) {
-        parent <- phylogeny[index, 2]  # Get the parent
+        parent <- phylogeny[index, 2] # Get the parent
         if (is.null(merge_nodes[[parent]])) { # First offspring
             merge_nodes[[parent]] <- index
         } else { # We alredy found one of the offspring
             # Record second offspring nodes
             children <- c(merge_nodes[[parent]], index)
             # Now construct the merged string
-            branches[parent] <- paste0("(", branches[children[1]], ":",
-                                       phylogeny[children[1], col], ",",
-                                       branches[children[2]], ":",
-                                       phylogeny[children[2], col], ")")
+            branches[parent] <- paste0(
+                "(", branches[children[1]], ":",
+                phylogeny[children[1], col], ",",
+                branches[children[2]], ":",
+                phylogeny[children[2], col], ")"
+            )
         }
-
     }
 
     # Complete the tree
@@ -57,9 +58,11 @@ phylogeny_to_newick <- function(phylogeny, mode = "mu", label_mode = "local") {
     if (label_mode == "abs") {
         # We require stringr for this
         # Switch the labels to absolute indexing
-        tree <- stringr::str_replace_all(pattern = "([0-9]+)_",  # Match a number followed by an underscore
-                     replacement = function(x) paste0(phylogeny[as.numeric(substr(x, 1, nchar(x) - 1)), 7], "_"),
-                     string = tree)  # Replace with the absolute index
+        tree <- stringr::str_replace_all(
+            pattern = "([0-9]+)_", # Match a number followed by an underscore
+            replacement = function(x) paste0(phylogeny[as.numeric(substr(x, 1, nchar(x) - 1)), 7], "_"),
+            string = tree
+        ) # Replace with the absolute index
     }
     return(tree)
 }

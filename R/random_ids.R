@@ -1,23 +1,23 @@
 # Random ids module for sampling a list of (possible) detections
 # from a transmission history.
 
-random_ids <- function(active, minimum_size = FALSE,
-proportional = FALSE, spike_root = FALSE) {
+random_ids <- function(
+    active, minimum_size = FALSE,
+    proportional = FALSE, spike_root = FALSE) {
     # Either minimum_size or proportional must be specified.
     if (!(minimum_size || proportional)) {
         stop("Either a minimum size or proportional sampling must be specified")
     }
     if (proportional) {
         observation_size <- length(active) * proportional
-        observation_size <- floor(observation_size)  # enforce type safety
-
+        observation_size <- floor(observation_size) # enforce type safety
     }
     if (minimum_size > 0) observation_size <- as.integer(minimum_size)
 
     samples <- sample(active, observation_size, replace = FALSE)
     if (spike_root) {
-        samples <- c(samples, 0)  # add the root in here
-        observation_size <- observation_size + 1  # increase the number of samples
+        samples <- c(samples, 0) # add the root in here
+        observation_size <- observation_size + 1 # increase the number of samples
     }
     return(list("observation_size" = observation_size, "samples" = samples))
 }
@@ -39,8 +39,10 @@ proportional = FALSE, spike_root = FALSE) {
 #' @export
 random_prop_ids <- function(active, proportion, minimum_size,
                             spike_root = FALSE) {
-    return(random_ids(active, proportional = proportion,
-           minimum_size = minimum_size))
+    return(random_ids(active,
+        proportional = proportion,
+        minimum_size = minimum_size
+    ))
 }
 
 #' Sample a fixed number of of individuals randomly from the population.
@@ -56,6 +58,8 @@ random_prop_ids <- function(active, proportion, minimum_size,
 #' @seealso random_prop_ids
 #' @export
 random_fixed_size_ids <- function(active, minimum_size, spike_root = FALSE) {
-    return(random_ids(active, minimum_size = minimum_size,
-           spike_root = spike_root))
+    return(random_ids(active,
+        minimum_size = minimum_size,
+        spike_root = spike_root
+    ))
 }

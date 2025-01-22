@@ -1,7 +1,7 @@
 test_that("Kphasic hiv rate function works - simple", {
     # Setup some simple parameters
 
-    # Relative rates. Will be normalized so it integrates to 1. 
+    # Relative rates. Will be normalized so it integrates to 1.
     rate_list <- list(c(1, 1), c(2, 1), c(1, 1))
     params <- list(R0 = 1)
     rate_fn <- get_Kphasic_hiv_rate_function(

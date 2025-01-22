@@ -1,0 +1,7 @@
+my_custom_style <- function(...) {
+    return(styler::tidyverse_style(
+        # Increase indentation from 2 spaces to 4:
+        indent_by = 4,
+        ...
+    ))
+}

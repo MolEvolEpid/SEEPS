@@ -9,6 +9,6 @@
 stochastify_transmission_history <- function(transmission_history, rate) {
     inds <- 1:(dim(transmission_history)[1] - 2)
     transmission_history[inds, 5] <- rpois(length(inds), transmission_history[inds, 4] * rate)
-    # taking lambda=0 here is not a problem - R describes it as a point mass at 0
+    # taking lambd =  here is not a problem - R describes it as a point mass at 0
     return(list("geneology" = transmission_history))
 }

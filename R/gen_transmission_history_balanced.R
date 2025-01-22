@@ -1,4 +1,4 @@
-#'Generate a transmission history for a given number of individuals under a optimally balanced tree
+#' Generate a transmission history for a given number of individuals under a optimally balanced tree
 #'
 #' Simulate a balanced transmission tree with a given number of individuals. If the `population_size` is a power of 2,
 #' then the tree will be unique up to relabeling the tips. If the `population_size` is not a power of 2, then the tree
@@ -7,29 +7,30 @@
 #' a `population_size` number of leaves. As a result, we will always find the shortest tree with the prescribed number
 #' of leaves that is perfectly balanced.
 #'
-#' @param n number of individuals to have in the final layer
+#' @param population_size The number of individuals in the final layer of the tree
+#' @param spike_root Ignored. Default FALSE.
 #'
 #' @export
-gen_transmission_history_balanced_tree <- function(population_size, #nolint: object_length_linter
-                              spike_root = FALSE) {
+gen_transmission_history_balanced_tree <- function(population_size, # nolint: object_length_linter
+                                                   spike_root = FALSE) {
     # Simulate a balanced tree wih `population_size` leaves.
 
     depth <- floor(log2(population_size + 1))
-    num_nodes <- 2^(depth)  # internal nodes, only leaf nodes if population_size is a power of 2
+    num_nodes <- 2^(depth) # internal nodes, only leaf nodes if population_size is a power of 2
     if (num_nodes == population_size) {
         # If population_size is a power of 2, we don't need to add any extra nodes
         K <- 0
     } else {
-        K <- population_size  # Number of extra leaves we need
+        K <- population_size # Number of extra leaves we need
     }
 
     num_nodes <- 2 * num_nodes + K
-    parents <- matrix(0, num_nodes, 2)  # DAG for offspring
+    parents <- matrix(0, num_nodes, 2) # DAG for offspring
 
     # Declare counters and pointers
     flag <- TRUE
-    parents[2,] <- c(1,1)  # Setup the index case (1) at time 0 from case 1
-     # Setup the index case
+    parents[2, ] <- c(1, 1) # Setup the index case (1) at time 0 from case 1
+    # Setup the index case
     birth_step <- c(1)
     # calculate the depth of a binary tree needed for population_size leaves
     # We're going to do a 2-index approch.
@@ -42,10 +43,10 @@ gen_transmission_history_balanced_tree <- function(population_size, #nolint: obj
         # Shuffle the pointers for the index vectors
         parent_vector <- offspring_vector
         # Build out a new offspring vector
-        offspring_vector <- (2 ** (current_depth-1)+1):((2 ** (current_depth)))
+        offspring_vector <- (2**(current_depth - 1) + 1):((2**(current_depth)))
         # Enforce the cap
         vector_length <- length(offspring_vector)
-        if (vector_length >= population_size) {  # We have extra population
+        if (vector_length >= population_size) { # We have extra population
             offspring_vector <- offspring_vector[1:(population_size)]
             # This pass through will fill us up, so don't go again
             flag <- FALSE
@@ -53,18 +54,18 @@ gen_transmission_history_balanced_tree <- function(population_size, #nolint: obj
 
         addition_length <- length(offspring_vector)
         # For each parent, add the appropriate number of offspring
-        if (addition_length > 1) {  # If we have only one offspring to add,
-        # we don't need to do this skip ahead to the edge case handler
+        if (addition_length > 1) { # If we have only one offspring to add,
+            # we don't need to do this skip ahead to the edge case handler
 
-            for (i in 1:(addition_length %/% 2)) {  # Loop over all parents
+            for (i in 1:(addition_length %/% 2)) { # Loop over all parents
 
                 index <- pointer + 1
-                parents[index, 1] <- parent_vector[i]  # Record the parent
-                parents[index, 2] <- current_depth  # Record the birth time
+                parents[index, 1] <- parent_vector[i] # Record the parent
+                parents[index, 2] <- current_depth # Record the birth time
                 # Try to add in another
                 index <- pointer + 2
-                parents[index, 1] <- parent_vector[i]  # Record the parent
-                parents[index, 2] <- current_depth  # Record the birth time
+                parents[index, 1] <- parent_vector[i] # Record the parent
+                parents[index, 2] <- current_depth # Record the birth time
                 # Update the global counter
                 pointer <- pointer + 2
             }
@@ -74,25 +75,26 @@ gen_transmission_history_balanced_tree <- function(population_size, #nolint: obj
         # Only an issue with the final layer of leaves
         if (addition_length %% 2 == 1) {
             index <- pointer + 1
-            parents[index, 1] <- parent_vector[(addition_length %/% 2) + 1]  # Record the parent
-            parents[index, 2] <- current_depth  # Record the birth time
+            parents[index, 1] <- parent_vector[(addition_length %/% 2) + 1] # Record the parent
+            parents[index, 2] <- current_depth # Record the birth time
             # Update the global counter
             pointer <- pointer + 1
         }
         current_depth <- current_depth + 1
     }
-    active <- offspring_vector  # The newly leaf nodes are the active nodes
+    active <- offspring_vector # The newly leaf nodes are the active nodes
     # Add on any parent nodes we didn't attach offspring to
     if (2 * length(parent_vector) < length(offspring_vector)) {
         # We have extra parents, get the tail we didn't assign offspring to
         extra_parents <- parent_vector[(length(offspring_vector) + 1):length(parent_vector)]
-        active <- c(active, extra_parents)  # Not worth optimizing this concatenate out
+        active <- c(active, extra_parents) # Not worth optimizing this concatenate out
     }
 
-    returned_data <- list("parents" = parents, "active" = active,
-                          "t_end" = current_depth, "total_offspring" = 0)
+    returned_data <- list(
+        "parents" = parents, "active" = active,
+        "t_end" = current_depth, "total_offspring" = 0
+    )
     return(returned_data)
-
 }
 
 # Should have

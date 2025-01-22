@@ -6,22 +6,27 @@
 #' Currently supported are: "HIV1" (HXB2 reference) and "toy" (a poly A/C/G/T
 #' example sequence for testing).
 #'
+#' @param organism_name The name of the reference sequence.
+#' See [`show_available_sequences`] to obtain a list of supported sequences.
 #' @param start The start coordinate of the sequence
-#' @param end The end coordinate of the sequence
+#' @param stop The end coordinate of the sequence
 lookup_sequence_by_index <- function(organism_name, start, stop) {
     # Get the sequence
-    sequence <- pkgenv$seq_store[[organism_name]]$sequence  # nolint: object_usage_linter
+    sequence <- pkgenv$seq_store[[organism_name]]$sequence # nolint: object_usage_linter
     # Get the sequence length
     sequence_length <- length(sequence)
     # Check the start and stop are valid
     if (start < 1 || start > sequence_length || stop < 1 || stop > sequence_length) {
-        msg <- paste("The start and stop positions are invalid.", "start is ", start,
-                     "stop is ", stop, ". The querried length is ", sequence_length)
+        msg <- paste(
+            "The start and stop positions are invalid.", "start is ", start,
+            "stop is ", stop, ". The querried length is ", sequence_length
+        )
         stop(msg)
-    }  # else:
+    } # else:
     # Return the sequence
     return(sequence[start:stop])
 }
+
 #' Obtain a sequence from the builtin reference sequences using an name and annotated region
 #'
 #' Return a portion of a reference genome using a standard annotation name.
@@ -35,12 +40,16 @@ lookup_sequence_by_index <- function(organism_name, start, stop) {
 #' For a more detailed lookup proceedure with the reference sequences using user-provided
 #' coordinates, see `lookup_sequence_by_index`.
 #'
+#' @param organism_name The name of the reference sequence.
+#' @param region_name The name of the region to extract. See
+#' [`show_available_regions`] for instructions to obtain a list of supported regions
+#' by keyword.
 #' @seealso lookup_sequence_by_index
 #' @export
 #'
 lookup_sequence_by_name <- function(organism_name, region_name) {
     # Get the organism
-    organism <- pkgenv$seq_store[[organism_name]]  # nolint: object_usage_linter
+    organism <- pkgenv$seq_store[[organism_name]] # nolint: object_usage_linter
     # Get the region
     region_map <- organism$region
     # Find the correct region
@@ -59,7 +68,7 @@ lookup_sequence_by_name <- function(organism_name, region_name) {
 #' @export
 show_available_sequences <- function() {
     # Get the organism names
-    organism_names <- names(pkgenv$seq_store)  # nolint: object_usage_linter
+    organism_names <- names(pkgenv$seq_store) # nolint: object_usage_linter
     # Print the organism names
     cat(organism_names, "\n")
 }
@@ -74,7 +83,7 @@ show_available_sequences <- function() {
 #' @export
 show_available_regions <- function(organism_name, chart = TRUE) {
     # Get the organism
-    organism <- pkgenv$seq_store[[organism_name]]  # nolint: object_usage_linter
+    organism <- pkgenv$seq_store[[organism_name]] # nolint: object_usage_linter
     # Get the region map
     region_map <- organism$region
     # Get the region names
