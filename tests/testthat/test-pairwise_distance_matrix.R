@@ -24,12 +24,12 @@ test_that("Check pairwise distance matrix construction, 3 samples", {
     colnames(expected_matrix) <- c(7, 9, 10)
     expect_equal(distance_matrix, expected_matrix)
 
-    # Now set the names aside so we can compare values
-    rownames(distance_matrix) <- NULL
-    colnames(distance_matrix) <- NULL
-    # This next test does consider machine tolerances
-    expect_equal(dim(distance_matrix), c(3, 3))
-    expect_equal(diag(distance_matrix), rep(0, 3))
+  # Now set the names aside so we can compare values
+  rownames(distance_matrix) <- NULL
+  colnames(distance_matrix) <- NULL
+  # This next test does consider machine tolerances
+  expect_equal(dim(distance_matrix), c(3, 3))
+  expect_equal(diag(distance_matrix), rep(0, 3))
 })
 
 test_that("Check pairwise distance matrix construction, 4 samples", {

@@ -27,9 +27,9 @@ biphasic_HIV_rate <- function(current_step, birth_step, params) { # nolint: obje
 #' @export
 get_biphasic_HIV_rate <- function(params) {
     # params_factory <- params
-    rate_fn <- function(current_step, birth_step, ...) { # nolint: object_name_linter
+    rate_fn <- function(current_step, birth_step, ...) {   # nolint: object_name_linter
         return(((current_step - birth_step) < 3) * 0.4 / 3 * params[["R0"]] / 0.505
-            + ((current_step - birth_step) >= 3) * 0.005 * params[["R0"]] / 0.505)
+               + ((current_step - birth_step) >= 3) * 0.005 * params[["R0"]] / 0.505)
     }
     return(rate_fn)
 }

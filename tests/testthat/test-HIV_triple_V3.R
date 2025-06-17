@@ -25,12 +25,12 @@ test_that("simulate_triple_HIV_V3() pipeline", {
     # We don't expect integer distances to be output, as distance corrections
     # are occurring with TN93
 
-    # Test matrix_trans
-    rownames(output[["matrix_trans"]]) <- NULL
-    colnames(output[["matrix_trans"]]) <- NULL
-    expect_equal(dim(output[["matrix_trans"]]), c(sample_size, sample_size))
-    expect_equal(diag(output[["matrix_trans"]]), rep(0, sample_size))
-    expect_type(output[["matrix_trans"]], "double")
+  # Test matrix_trans
+  rownames(output[["matrix_trans"]]) <- NULL
+  colnames(output[["matrix_trans"]]) <- NULL
+  expect_equal(dim(output[["matrix_trans"]]), c(sample_size, sample_size))
+  expect_equal(diag(output[["matrix_trans"]]), rep(0, sample_size))
+  expect_type(output[["matrix_trans"]], "double")
 
     # Test matrix_phylo
     rownames(output[["matrix_phylo"]]) <- NULL

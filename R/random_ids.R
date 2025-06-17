@@ -8,16 +8,50 @@ random_ids <- function(
     if (!(minimum_size || proportional)) {
         stop("Either a minimum size or proportional sampling must be specified")
     }
+    observation_size_prop <- 0
+    observation_size_min <- 0
     if (proportional) {
-        observation_size <- length(active) * proportional
-        observation_size <- floor(observation_size) # enforce type safety
+        observation_size_prop <- length(active) * proportional
+        observation_size_prop <- floor(observation_size_prop)  # enforce type safety
+
     }
     if (minimum_size > 0) observation_size <- as.integer(minimum_size)
+
+    # put them together
+    observation_size <- max(observation_size_prop, observation_size_min)
 
     samples <- sample(active, observation_size, replace = FALSE)
     if (spike_root) {
         samples <- c(samples, 0) # add the root in here
         observation_size <- observation_size + 1 # increase the number of samples
+    }
+    return(list("observation_size" = observation_size, "samples" = samples))
+}
+
+# Sample individuals with probability p independently. If the sample size is
+# less than the minimum size, the minimum size is used, and remaining individuals
+# are picked randomly.
+binomial_random_ids <- function(active, p, minimum_size, spike_root = FALSE) {
+    observation_size <- rbinom(1, length(active), p)
+    if (observation_size < minimum_size) observation_size <- minimum_size
+    samples <- sample(active, observation_size, replace = FALSE)
+    if (spike_root) {
+        samples <- c(samples, 0)  # add the root in here
+        observation_size <- observation_size + 1  # increase the number of samples
+    }
+    return(list("observation_size" = observation_size, "samples" = samples))
+}
+
+# Sample individuals with probability p independently. If the sample size is
+# less than the minimum size, the minimum size is used, and remaining individuals
+# are picked randomly.
+binomial_random_ids <- function(active, p, minimum_size, spike_root = FALSE) {
+    observation_size <- rbinom(1, length(active), p)
+    if (observation_size < minimum_size) observation_size <- minimum_size
+    samples <- sample(active, observation_size, replace = FALSE)
+    if (spike_root) {
+        samples <- c(samples, 0)  # add the root in here
+        observation_size <- observation_size + 1  # increase the number of samples
     }
     return(list("observation_size" = observation_size, "samples" = samples))
 }
@@ -29,20 +63,29 @@ random_ids <- function(
 #' any information about the transmission history to select the sample.
 #'
 #' @param active A vector of active individuals
-#' @param proportion A float between 0 and 1.
+#' @param proportion A float between 0 and 1. See `binomial` for more information
+#' on how the portion is used.
 #'  The proportion of active individuals to sample.
 #' @param minimum_size The minimum number of individuals to sample.
-#'  If the proportional sample is smaller than the minimum size,
-#'  the proprotional size is used.
+#'  If the sample determined by `proportion` (and `binomial`) is smaller than
+#' the minimum size, the proprotional size is used.
+#' @param binomial Whether to sample independently, or at a fixed rate.
+#' If TRUE, then each individual is sampled independently, and the total number
+#' of samples is binomially distributed with mean equal to proportion * length(active)
+#' and variance equal to proportion * (1 - proportion) * length(active).
+#' If FALSE, then the number of samples is equal to floor(proportion * length(active)).
 #' @param spike_root Whether to include the root in the sample.
 #' @seealso random_fixed_size_ids
 #' @export
 random_prop_ids <- function(active, proportion, minimum_size,
-                            spike_root = FALSE) {
-    return(random_ids(active,
-        proportional = proportion,
-        minimum_size = minimum_size
-    ))
+                            binomial = FALSE, spike_root = FALSE) {
+    if (binomial) {
+        return(binomial_random_ids(active, proportion,
+                                   minimum_size, spike_root))
+    } else {
+        return(random_ids(active, proportional = proportion,
+               minimum_size = minimum_size))
+    }
 }
 
 #' Sample a fixed number of of individuals randomly from the population.
@@ -58,8 +101,6 @@ random_prop_ids <- function(active, proportion, minimum_size,
 #' @seealso random_prop_ids
 #' @export
 random_fixed_size_ids <- function(active, minimum_size, spike_root = FALSE) {
-    return(random_ids(active,
-        minimum_size = minimum_size,
-        spike_root = spike_root
-    ))
+    return(random_ids(active, minimum_size = minimum_size,
+                      spike_root = spike_root))
 }

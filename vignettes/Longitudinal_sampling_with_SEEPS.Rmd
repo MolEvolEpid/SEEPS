@@ -70,6 +70,8 @@ sim_parameters <- SEEPS::wrap_parameters(
 
 state <- SEEPS::initialize(sim_parameters) # Setup
 state <- SEEPS::gen_exp_phase(state, sim_parameters) # Run until we have at least 90% of the maximum population
+state <- SEEPS::initialize(sim_parameters) # Setup
+state <- SEEPS::gen_exp_phase(state, sim_parameters) # Run until we have at least 90% of the maximum population
 
 # Take a first sample at the end of the exponential phase
 sample_taken <- SEEPS::contact_traced_uniform_restarts_ids(
@@ -82,7 +84,7 @@ state <- SEEPS::remove_samples(state, sample_taken$samples)
 
 # Now simulate forward
 for (time_pointer in 1:3) {
-    state <- SEEPS::gen_const_phase(state, sim_parameters, num_steps = 12)
+  state <- SEEPS::gen_const_phase(state, sim_parameters, num_steps = 12)
 
     sample_taken <- SEEPS::contact_traced_uniform_restarts_ids(
         state$active, state$parents, samples_per_year, contact_tracing_parameter
@@ -130,6 +132,7 @@ library(ape)
 tree <- drop.tip(read.tree(text = newick_tree_string), "")
 plot(tree, cex = 0.5)
 axis(1, las = 1, col.axis = "black", col.ticks = "black")
+axis(1, las = 1, col.axis = "black", col.ticks = "black")
 ```
 
 
@@ -160,9 +163,9 @@ gen_transmission_history_exponential_constant_local <- function(minimum_populati
     state <- gen_exp_phase(state, parameters, all_states = TRUE)
     all_states <- c(all_states, state)
 
-    state <- gen_const_phase(all_states[[length(all_states)]], parameters, num_steps = total_steps, all_states = TRUE)
-    all_states <- c(all_states, state)
-    return(lapply(all_states, SEEPS::clean_up))
+  state <- gen_const_phase(all_states[[length(all_states)]], parameters, num_steps = total_steps, all_states = TRUE)
+  all_states <- c(all_states, state)
+  return(lapply(all_states, SEEPS::clean_up))
 }
 ```
 
@@ -212,12 +215,12 @@ for (i in 2:length(simulator_result)) {
         next # Nothing to add to the samples list
     }
 
-    # Add to removed list
-    removed_list[[ptr]] <- removed_active
-    birth_list[[ptr]] <- new_active
-    # Record the sample time
-    sample_times[[ptr]] <- simulator_result[[i]]$t_end
-    ptr <- ptr + 1
+  # Add to removed list
+  removed_list[[ptr]] <- removed_active
+  birth_list[[ptr]] <- new_active
+  # Record the sample time
+  sample_times[[ptr]] <- simulator_result[[i]]$t_end
+  ptr <- ptr + 1
 }
 
 # Final step - get the active nodes at the last step
@@ -243,6 +246,7 @@ Now we can visualize the entire transmission history.
 
 ```{r, fig.height = 12}
 string <- SEEPS::phylogeny_to_newick(full_transmission_history$geneology, mode = "mean", label_mode = "abs")
+string <- SEEPS::phylogeny_to_newick(full_transmission_history$geneology, mode = "mean", label_mode = "abs")
 tree <- read.tree(text = string)
 plot(ladderize(tree))
 axis(1, las = 1, col.axis = "black", col.ticks = "black")
@@ -256,10 +260,15 @@ deaths <- lapply(removed_list, length)
 # births_ <- births[1:length(births) - 1]  # Don't report the final step
 deaths_ <- deaths[1:length(deaths) - 1] # Don't report the final step
 sample_times_ <- sample_times[1:length(sample_times) - 1] # Don't report the final step
+deaths_ <- deaths[1:length(deaths) - 1] # Don't report the final step
+sample_times_ <- sample_times[1:length(sample_times) - 1] # Don't report the final step
 deaths_ <- unlist(deaths_)
 births_ <- unlist(births_)
 print(length(births_))
 print(length(deaths_))
+plot(seq_along(births_), births_, col = "black", type = "S") # label="Births"
+lines(seq_along(deaths_), deaths_, col = "red", type = "S") # label="Deaths"
+legend(39, y = NULL, legend = c("Births", "Deaths"), col = c("black", "red"), lty = 1:2, cex = 0.8)
 plot(seq_along(births_), births_, col = "black", type = "S") # label="Births"
 lines(seq_along(deaths_), deaths_, col = "red", type = "S") # label="Deaths"
 legend(39, y = NULL, legend = c("Births", "Deaths"), col = c("black", "red"), lty = 1:2, cex = 0.8)
@@ -269,6 +278,7 @@ print(length(deaths_))
 
 deltas <- births_ - deaths_
 print(length(deltas))
+plot(1:length(deltas), cumsum(deltas), ylab = "Number of active infections", xlab = "Time index [steps]", ylim = c(-1, maximum_population_target + 2), type = "S")
 plot(1:length(deltas), cumsum(deltas), ylab = "Number of active infections", xlab = "Time index [steps]", ylim = c(-1, maximum_population_target + 2), type = "S")
 # Draw a horizontal line at the maximum population target
 abline(h = maximum_population_target, col = "red", lty = 2)

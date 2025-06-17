@@ -3,6 +3,8 @@ test_that("contact_tracing: contact_traced_uniform_ids() works", {
     parents <- t(matrix(c(0, 1, 1, 2, 3, 0, 1, 1, 2, 2),
         nrow = 2, ncol = 5, byrow = TRUE
     ))
+        nrow = 2, ncol = 5, byrow = TRUE
+    ))
     active <- c(1, 2, 3, 4, 5)
     # First check we recover everybody with  =  discovery rate
     result <- contact_traced_uniform_ids(
@@ -83,13 +85,13 @@ test_that("contact_tracing: test data retrieval", {
     expect_equal(connections[["secondary_infections"]], c(5))
     expect_equal(connections[["secondary_times"]], c(2))
 
-    # Special cases:
-    # Index case (1):
-    connections <- get_connections(seed = 1, parents = parents)
-    expect_equal(connections[["parent"]], 0)
-    expect_equal(connections[["infection_time"]], 0)
-    expect_equal(connections[["secondary_infections"]], c(2, 3))
-    expect_equal(connections[["secondary_times"]], c(1, 1))
+  # Special cases:
+  # Index case (1):
+  connections <- get_connections(seed = 1, parents = parents)
+  expect_equal(connections[["parent"]], 0)
+  expect_equal(connections[["infection_time"]], 0)
+  expect_equal(connections[["secondary_infections"]], c(2, 3))
+  expect_equal(connections[["secondary_times"]], c(1, 1))
 
     # leaf - no offspring
     connections <- get_connections(seed = 4, parents = parents)

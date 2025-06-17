@@ -1,6 +1,6 @@
 Package: SEEPS
 Title: Sequence evolution and epidemiological process simulator
-Version: 0.2.0
+Version: 0.3.0
 Authors@R:
     c(person(given = "Michael",
            family = "Kupperman",
@@ -40,3 +40,4 @@ RoxygenNote: 7.3.2
 Depends:
     R (>= 3.5.0)
 VignetteBuilder: knitr
+URL: https://molevolepid.github.io/SEEPS/

@@ -126,6 +126,7 @@ phylogeny <- SEEPS::geneology_to_phylogeny_bpb(
     leaf_sample_ids = genealogy$transformed_sample_indices,
     sample_times = genealogy$sample_times,
     a = 5, b = 5
+
 )
 # print(phylogeny)
 # print(phylogeny[,6])

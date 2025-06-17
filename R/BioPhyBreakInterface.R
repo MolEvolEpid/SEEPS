@@ -19,8 +19,8 @@
 #' @importFrom ape read.tree
 #' @export
 geneology_to_phylogeny_bpb <- function(transmission_history,
-                                       infection_times, leaf_sample_ids,
-                                       sample_times, a = 5, b = 5, make_plot = FALSE) {
+                                                                      infection_times, leaf_sample_ids,
+                                                                      sample_times, a = 5, b = 5, make_plot = FALSE) {
     n <- length(transmission_history)
     labels <- 1:n
     tt <- data.frame(

@@ -1,6 +1,6 @@
 skip(message = "Reserved for future use")
 test_that("Kphasic hiv rate function works - simple", {
-    # Setup some simple parameters
+  # Setup some simple parameters
 
     # Relative rates. Will be normalized so it integrates to 1.
     rate_list <- list(c(1, 1), c(2, 1), c(1, 1))

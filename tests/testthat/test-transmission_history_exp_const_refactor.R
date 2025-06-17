@@ -31,11 +31,11 @@ test_that("Classic and refactor simulations match", {
         spike_root = FALSE
     )
 
-    # Use expect_equal to compare the two for equality.
-    # Compare parents, t_end, active, total_offspring
-    # print(simulator_result$parents[1:50,])
-    # print("--- XXXX ---")
-    # print(simulator_result_classic$parents[1:50,])
+  # Use expect_equal to compare the two for equality.
+  # Compare parents, t_end, active, total_offspring
+  # print(simulator_result$parents[1:50,])
+  # print("--- XXXX ---")
+  # print(simulator_result_classic$parents[1:50,])
 
     expect_equal(simulator_result_classic$parents, simulator_result$parents)
     expect_equal(simulator_result_classic$t_end, simulator_result$t_end)

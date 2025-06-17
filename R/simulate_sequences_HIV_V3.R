@@ -35,7 +35,7 @@ simulate_sequences_HIV_V3 <- function(params) { # nolint: object_name_linter
     # First, determine the rate function for offspring generation
     # This obtains the function used in [Graw et al. 2012], [Kupperman et al. 2022]
     biphasic_rate_function <- SEEPS::get_biphasic_HIV_rate(
-        params = params[["rate_function_parameters"]]
+      params = params[["rate_function_parameters"]]
     )
 
     # Forward pass to generate transmission history
@@ -65,43 +65,44 @@ simulate_sequences_HIV_V3 <- function(params) { # nolint: object_name_linter
 
     # Provide values of a and b for the within-host diversity models.
     phylogeny <- SEEPS::geneology_to_phylogeny_bpb(
-        transmission_history = res$parents,
-        infection_times = res$transmission_times,
-        sample_times = res$sample_times,
-        a = params[["a"]], b = params[["b"]],
-        leaf_sample_ids = res$transformed_sample_indices
+      transmission_history = res$parents,
+      infection_times = res$transmission_times,
+      sample_times = res$sample_times,
+      a = params[["a"]], b = params[["b"]],
+      leaf_sample_ids = res$transformed_sample_indices
+
     )
 
 
     # Convert the time signals into a # of mutations per site
     phylogeny <- SEEPS::stochastify_transmission_history(
-        transmission_history = phylogeny$phylogeny,
-        # Expect a rate in per nt per year
-        # input distances are in months
-        rate = params[["mutation_rate"]] / 12
+      transmission_history = phylogeny$phylogeny,
+      # Expect a rate in per nt per year
+      # input distances are in months
+      rate = params[["mutation_rate"]] / 12
     )
 
     # Get a the rate model for V3
     if (is.null(params[["nonzero_I"]])) {
-        # If the user does not specify a nonzero_I, then we assume that the
-        # user wants to use the default value of TRUE (I>0)
-        params[["nonzero_I"]] <- TRUE
+      # If the user does not specify a nonzero_I, then we assume that the
+      # user wants to use the default value of TRUE (I>0)
+      params[["nonzero_I"]] <- TRUE
     }
     rate_model <- SEEPS::get_V3_rate_model(nonzero_I = params[["nonzero_I"]])
 
     # Get the HIV1 reference sequence for V3
     V3_sequence <- SEEPS::lookup_sequence_by_name(
-        organism_name = "HIV1", # nolint: object_name_linter
-        region_name = "V3"
+      organism_name = "HIV1", # nolint: object_name_linter
+      region_name = "V3"
     )
 
     # Call Seq-Gen to generate sequences from the provided reference sequence.
     sequences <- SEEPS::generate_sequences(
-        phylogeny = phylogeny$geneology,
-        branch_rate = params[["mutation_rate"]] / 12,
-        root_sequence = V3_sequence,
-        rate_model = rate_model,
-        rate_per_nt = FALSE
+      phylogeny = phylogeny$geneology,
+      branch_rate = params[["mutation_rate"]] / 12,
+      root_sequence = V3_sequence,
+      rate_model = rate_model,
+      rate_per_nt = FALSE
     ) # Distances in phylogeny are already in per nt
     # The return is a string that we can write to a fasta file.
 
@@ -119,7 +120,7 @@ simulate_sequences_HIV_V3 <- function(params) { # nolint: object_name_linter
     # Drop the sequences we didn't keep
     sequences <- sequences[reduced_mat_data$keep_indices, ]
     return(list(
-        "sequences" = sequences, "params" = params,
-        "matrix" = reduced_mat_data$matrix
+      "sequences" = sequences, "params" = params,
+      "matrix" = reduced_mat_data$matrix
     ))
 }

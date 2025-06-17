@@ -54,6 +54,8 @@ contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
     if (result[["success"]]) {
         return(result)
     } else {
+        warning("Failed to find a sample after", max_attempts, "attempts")
+        # print(result)
         return(FALSE)
     }
 }
@@ -324,6 +326,7 @@ contact_tracing_core <- function(detected_id, active, parents,
 # Expect a parent and a list of offspring.
 # Time data may not be known or reliable in pratice, but for simulations,
 # This is useful information for the discovery function.
+#' @export
 get_connections <- function(seed, parents) {
     # get the parent of the seed
     parent <- parents[seed, 1]

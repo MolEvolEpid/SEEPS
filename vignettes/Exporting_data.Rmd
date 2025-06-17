@@ -91,6 +91,7 @@ sequences_fasta <- SEEPS::generate_sequences(
 
 ```{r}
 newick_tree <- SEEPS::phylogeny_to_newick(geneology$geneology, mode = "mean", label_mode = "abs")
+newick_tree <- SEEPS::phylogeny_to_newick(geneology$geneology, mode = "mean", label_mode = "abs")
 sequences_df <- SEEPS::fasta_string_to_dataframe(sequences_fasta)
 ```
 

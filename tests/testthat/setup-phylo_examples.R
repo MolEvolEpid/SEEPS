@@ -52,11 +52,11 @@ four_leaf_phylo <- function() {
     # Set Expected # of mutations based on time/rates
     phylogeny[1:4, 4] <- 1.1
 
-    phylogeny[5:6, 4] <- 1.2
-    # Actual amout of mutations
-    phylogeny[1:6, 5] <- 1
-    # leaf flags
-    phylogeny[1:4, 6] <- 1
+  phylogeny[5:6, 4] <- 1.2
+  # Actual amout of mutations
+  phylogeny[1:6, 5] <- 1
+  # leaf flags
+  phylogeny[1:4, 6] <- 1
 
     newick_tree_mu <- "((1_:1,2_:1):1,(3_:1,4_:1):1);"
     newick_tree_mean <- "((1_:1.1,2_:1.1):1.2,(3_:1.1,4_:1.1):1.2);"
