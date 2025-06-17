@@ -99,7 +99,8 @@ samples <- SEEPS::contact_traced_uniform_ids(
 print(samples)
 ```
 
-This strategy is more complex, as we have a variable size of the cluster, and  this is impacted by the toplogy. Let us first example the topology:
+This strategy is more complex, as we have a variable size of the cluster, and  this is impacted by the toplogy. If we reapeat this process with different initial index cases, we will obtain different samples as well.
+Let us first example the topology:
 
 ```{r}
 contact_genealogy <- SEEPS::reduce_transmission_history(
