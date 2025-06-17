@@ -80,17 +80,32 @@ contact_traced_uniform_ids <- function(active, parents, minimum_sample_size, p,
 #' @param parents A matrix encoding the transmission history
 #' @param minimum_sample_size The minimum number of individuals to form a sample
 #' @param p The probability of discovering each contact during tracing
+#' @param initial_detections An optional list of initial detections to start the algorithm with.
+#'   If not specified, the algorithm will randomly select a set of initial detections.
 #' @return A list with four fields: "status", "samples", "success", and "found"
 #' if the algorithm fails to find a sample, FALSE is returned instead
 #' @export
 contact_traced_uniform_restarts_ids <- function(active, parents, # nolint: object_name_linter
-                                                minimum_sample_size, p) {
+                                                minimum_sample_size, p,
+                                                initial_detections = NULL) {
     discovery_function <- uniform_discovery_factory(p = p)
     termination_function <- sufficient_data_data_factory(
         minimum_size = minimum_sample_size
     )
     # Call the contact tracing engine
-    initial_detections <- sample(active, length(active), replace = FALSE)
+    if (is.null(initial_detections)) {
+        initial_detections <- sample(active, length(active), replace = FALSE)
+    } else {  # check the input
+        # check we got a numeric vector of ids
+        if (!is.numeric(initial_detections)) {
+            stop("Initial detections must be a numeric vector of ids")
+        }
+
+        # check that the ids are in the active list
+        if (any(!initial_detections %in% active)) {
+            stop("Initial detections must be a subset of the active nodes")
+        }
+    }
     results <- list()
     group_id_counter <- 1 # Track which group each individual was sampled from
     group_ids <- c()
