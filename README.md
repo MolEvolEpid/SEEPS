@@ -19,8 +19,8 @@ more details.
 
 If you use SEEPS in your research, please cite the following paper:
 
-> Kupperman, Ke, Leitner, *Paper title* (2023) Journal. DOI:
-> \[10.0000/000000000000\]
+> Kupperman MD, Ke R, Leitner T. 2025. Identifying Impacts of Contact Tracing on HIV Epidemiological Inference from Phylogenetic Data. Virus Evolution 11(1): veaf068.
+>  https://doi.org/10.1093/ve/veaf068
 
 ## Installation
 
