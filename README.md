@@ -49,7 +49,7 @@ parameters <- list(
     "minimum_population" = 15, "maximum_population_target" = 1000,
     "total_steps_after_exp_phase" = 0, "mutation_rate" = 0.0067 * 300
 )
-simultion_results <- SEEPS::simulate_classic_HIV(parameters)
+simulation_results <- SEEPS::simulate_classic_HIV(parameters)
 ```
 
 ## Modularity
